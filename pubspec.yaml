@@ -1,0 +1,94 @@
+name: morfo
+description: "Morfo — génération et transformation de photos par IA."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: ^4.0.3
+
+  # Navigation
+  go_router: ^17.3.0
+
+  # Modèles / sérialisation
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+
+  # Réseau
+  dio: ^5.10.0
+
+  # Stockage local
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.5
+
+  # Média
+  image_picker: ^1.2.3
+  cached_network_image: ^3.4.1
+  share_plus: ^13.2.0
+  permission_handler: ^12.0.3
+
+  # Signature holographique (gyroscope)
+  sensors_plus: ^7.1.0
+
+  # Animations
+  flutter_animate: ^4.5.2
+  lottie: ^3.5.1
+
+  # Config (.env — jamais de secret de modèle IA côté app)
+  flutter_dotenv: ^6.0.1
+
+  # NOTE MONÉTISATION : purchases_flutter (RevenueCat) et superwallkit_flutter
+  # (Superwall) sont des SDK iOS/Android uniquement et cassent le build web.
+  # Ils seront ajoutés sur le build mobile via une implémentation conditionnelle
+  # (voir services/purchases_service.dart et README §Monétisation).
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  build_runner: ^2.15.1
+  freezed: ^3.2.6-dev.1
+  json_serializable: ^6.14.0
+  riverpod_generator: ^4.0.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+
+  fonts:
+    # Display / titres — Clash Display (Fontshare)
+    - family: ClashDisplay
+      fonts:
+        - asset: assets/fonts/ClashDisplay-Regular.otf
+          weight: 400
+        - asset: assets/fonts/ClashDisplay-Medium.otf
+          weight: 500
+        - asset: assets/fonts/ClashDisplay-Semibold.otf
+          weight: 600
+        - asset: assets/fonts/ClashDisplay-Bold.otf
+          weight: 700
+    # UI / corps — Satoshi (Fontshare)
+    - family: Satoshi
+      fonts:
+        - asset: assets/fonts/Satoshi-Light.otf
+          weight: 300
+        - asset: assets/fonts/Satoshi-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Satoshi-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Satoshi-Bold.otf
+          weight: 700
