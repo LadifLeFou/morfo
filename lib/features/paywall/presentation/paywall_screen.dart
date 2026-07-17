@@ -14,9 +14,9 @@ final FutureProvider<List<SubscriptionOffer>> _offersProvider =
 );
 
 const List<String> _benefits = <String>[
-  'Générations illimitées',
+  '650 crédits rechargés chaque semaine',
   'Tous les styles, sans filigrane',
-  'De nouveaux styles chaque semaine',
+  'Photos et vidéos par IA',
   'Rendus en haute résolution',
 ];
 
@@ -94,7 +94,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 aspectRatio: 5 / 4,
                 child: HoloCard(
                   eyebrow: 'Portrait vivant',
-                  title: 'Passe en illimité',
+                  title: '650 crédits / semaine',
                   child: StylePreview(
                     beforeAsset: 'assets/images/preview_renaissance_before.jpg',
                     afterAsset: 'assets/images/preview_renaissance_after.jpg',

@@ -6,9 +6,9 @@ import '../core/persistence.dart';
 import '../services/purchases_service.dart';
 import '../services/service_providers.dart';
 
-/// Solde de démarrage en mode démo (aligné sur l'allocation hebdo d'un abonné).
-/// En mode réel, le solde vient du serveur (source de vérité).
-const int kInitialCredits = 500;
+/// Solde de démarrage en mode démo (aligné sur l'allocation hebdo d'un abonné :
+/// 650 crédits/semaine). En mode réel, le solde vient du serveur.
+const int kInitialCredits = 650;
 
 // — Templates —
 final FutureProvider<List<Template>> templatesProvider =

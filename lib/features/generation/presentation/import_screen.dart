@@ -23,9 +23,22 @@ class ImportScreen extends ConsumerStatefulWidget {
 
 class _ImportScreenState extends ConsumerState<ImportScreen> {
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _star = TextEditingController();
   XFile? _picked;
   Uint8List? _bytes;
   String? _error;
+
+  /// Style « selfie avec une star » : l'utilisateur décrit la célébrité.
+  bool get _isStar => widget.template.id == 'selfie_star';
+
+  /// Le style star exige une description de la star avant de générer.
+  bool get _starReady => !_isStar || _star.text.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _star.dispose();
+    super.dispose();
+  }
 
   Future<void> _pick(ImageSource source) async {
     setState(() => _error = null);
@@ -69,6 +82,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         template: widget.template,
         bytes: bytes,
         sourcePath: _picked?.path,
+        customPrompt: _isStar ? _star.text.trim() : null,
       ),
     );
   }
@@ -91,6 +105,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           children: <Widget>[
             _StyleHeader(template: widget.template),
             Gap.h24,
+            if (_isStar) ...<Widget>[
+              _starField(),
+              Gap.h24,
+            ],
             Expanded(
               child: hasPhoto ? _preview() : _chooser(),
             ),
@@ -105,8 +123,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 label: 'Générer · ${widget.template.creditCost} crédit'
                     '${widget.template.creditCost > 1 ? 's' : ''}',
                 icon: Icons.auto_awesome,
-                onPressed: _proceed,
+                onPressed: _starReady ? _proceed : null,
               ),
+              if (_isStar && !_starReady) ...<Widget>[
+                Gap.h8,
+                Text('Décris d’abord la star ci-dessus.',
+                    style:
+                        MorfoType.caption.copyWith(color: MorfoColors.muted)),
+              ],
               Gap.h12,
               TextButton(
                 onPressed: () => setState(() {
@@ -126,6 +150,46 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     return ClipRRect(
       borderRadius: Radii.brLg,
       child: MorfoImage(url: _picked!.path),
+    );
+  }
+
+  /// Champ dédié au style star : l'utilisateur ne décrit QUE la célébrité.
+  Widget _starField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text('QUELLE STAR ?', style: MorfoType.eyebrow),
+        Gap.h8,
+        TextField(
+          controller: _star,
+          onChanged: (_) => setState(() {}),
+          maxLines: 2,
+          textCapitalization: TextCapitalization.sentences,
+          style: MorfoType.bodyLarge,
+          cursorColor: MorfoColors.holoViolet,
+          decoration: InputDecoration(
+            hintText:
+                'Ex : à côté de Lionel Messi, sur le terrain, il passe le bras autour de mon épaule…',
+            hintStyle: MorfoType.bodyMedium,
+            filled: true,
+            fillColor: MorfoColors.surface.withValues(alpha: 0.6),
+            contentPadding: const EdgeInsets.all(Gap.lg),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: Radii.brMd,
+              borderSide: const BorderSide(color: MorfoColors.stroke),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: Radii.brMd,
+              borderSide: const BorderSide(color: MorfoColors.holoViolet),
+            ),
+          ),
+        ),
+        Gap.h8,
+        Text(
+          'Décris uniquement la star (qui, où, la pose). Les autres demandes sont ignorées.',
+          style: MorfoType.caption.copyWith(color: MorfoColors.muted),
+        ),
+      ],
     );
   }
 

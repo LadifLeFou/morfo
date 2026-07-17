@@ -60,8 +60,9 @@ const List<Template> demoTemplates = <Template>[
   Template(
     id: 'selfie_star',
     title: 'Selfie avec une star',
-    description: 'Un selfie avec une célébrité.',
+    description: 'Un selfie avec la célébrité de ton choix : décris-la, on s’occupe du reste.',
     category: MorfoCategory.fun,
+    creditCost: 68, // style premium (×1,5 du coût image de base)
   ),
 
   // — Jeux —

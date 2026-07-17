@@ -20,7 +20,7 @@ class Template {
     this.description = '',
     this.thumbnailUrl = '',
     this.kind = TemplateKind.image,
-    this.creditCost = 20,
+    this.creditCost = 45,
     this.hero = false,
   });
 
@@ -45,7 +45,7 @@ class Template {
         category: MorfoCategory.fromLabel((j['category'] as String?) ?? 'Fun'),
         thumbnailUrl: (j['thumbnail_url'] as String?) ?? '',
         kind: TemplateKind.fromString(j['kind'] as String?),
-        creditCost: (j['credit_cost'] as num?)?.toInt() ?? 20,
+        creditCost: (j['credit_cost'] as num?)?.toInt() ?? 45,
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{

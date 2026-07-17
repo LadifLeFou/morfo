@@ -75,6 +75,8 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
       title: _isVideo ? 'Vidéo' : 'Prompt libre',
       category: MorfoCategory.fun,
       kind: _isVideo ? TemplateKind.video : TemplateKind.image,
+      // Prompt libre : plus cher que les styles de base (vidéo la plus chère).
+      creditCost: _isVideo ? 350 : 75,
     );
 
     if (ref.read(creditsProvider) < template.creditCost) {
@@ -196,7 +198,9 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           ],
           Gap.h24,
           GradientButton(
-            label: _isVideo ? 'Générer la vidéo' : 'Générer',
+            label: _isVideo
+                ? 'Générer la vidéo · 350 crédits'
+                : 'Générer · 75 crédits',
             icon: _isVideo ? Icons.videocam : Icons.auto_awesome,
             onPressed: ready ? _generate : null,
           ),

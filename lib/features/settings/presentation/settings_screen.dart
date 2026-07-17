@@ -48,8 +48,8 @@ class SettingsScreen extends ConsumerWidget {
           else
             _SettingTile(
               icon: Icons.auto_awesome,
-              title: 'Passer en illimité',
-              subtitle: 'Débloque toutes les générations.',
+              title: 'S’abonner',
+              subtitle: '3,99 €/sem · 650 crédits chaque semaine.',
               onTap: () => context.push('/paywall'),
             ),
           _SettingTile(

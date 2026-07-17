@@ -85,32 +85,39 @@ class DemoPurchasesService implements PurchasesService {
         SubscriptionOffer(
           id: 'weekly',
           title: 'Hebdomadaire',
-          price: '4,99 €',
-          subtitle: 'par semaine',
+          price: '3,99 €',
+          subtitle: '650 crédits / semaine',
           period: OfferPeriod.weekly,
+          // Essai gratuit = principal levier de conversion.
+          highlighted: true,
+          trialDays: 3,
         ),
         SubscriptionOffer(
           id: 'annual',
           title: 'Annuel',
-          price: '29,99 €',
-          subtitle: 'soit 0,58 €/semaine',
+          price: '99,99 €',
+          subtitle: 'soit 1,92 €/semaine — économise 52 %',
           period: OfferPeriod.annual,
-          highlighted: true,
           trialDays: 3,
         ),
       ];
 
   @override
   Future<List<CreditPack>> creditPacks() async => const <CreditPack>[
-        CreditPack(id: 'pack_50', title: '50 crédits', credits: 50, price: '5,99 €'),
         CreditPack(
-          id: 'pack_150',
-          title: '150 crédits',
-          credits: 150,
-          price: '12,99 €',
+            id: 'pack_100', title: '100 crédits', credits: 100, price: '2,99 €'),
+        CreditPack(
+          id: 'pack_300',
+          title: '300 crédits',
+          credits: 300,
+          price: '6,99 €',
           bestValue: true,
         ),
-        CreditPack(id: 'pack_500', title: '500 crédits', credits: 500, price: '34,99 €'),
+        CreditPack(
+            id: 'pack_1000',
+            title: '1000 crédits',
+            credits: 1000,
+            price: '19,99 €'),
       ];
 
   @override
