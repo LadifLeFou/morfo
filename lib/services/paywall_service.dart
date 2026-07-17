@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/env.dart';
+import 'paywall_service_factory.dart';
+
 /// Contrat paywall distant — implémenté par Superwall sur mobile.
 abstract interface class PaywallService {
   /// Tente de présenter un paywall distant (A/B testé côté Superwall).
@@ -18,5 +21,9 @@ class StubPaywallService implements PaywallService {
       false;
 }
 
+/// Sélectionne Superwall (mobile) ou le stub (web/desktop) via la factory
+/// à imports conditionnels. La clé publique vient de `.env`.
 final Provider<PaywallService> paywallServiceProvider =
-    Provider<PaywallService>((Ref ref) => const StubPaywallService());
+    Provider<PaywallService>(
+  (Ref ref) => createPaywallService(Env.superwallKey),
+);

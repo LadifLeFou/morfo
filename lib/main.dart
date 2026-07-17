@@ -3,12 +3,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:async';
+
 import 'app/router.dart';
 import 'core/persistence.dart';
+import 'core/strings.dart';
 import 'design_system/morfo_theme.dart';
+import 'services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  S.init();
 
   // .env est bundlé comme asset ; en cas d'absence on retombe sur le mock.
   try {
@@ -25,8 +30,32 @@ Future<void> main() async {
   );
 }
 
-class MorfoApp extends StatelessWidget {
+class MorfoApp extends ConsumerStatefulWidget {
   const MorfoApp({super.key});
+
+  @override
+  ConsumerState<MorfoApp> createState() => _MorfoAppState();
+}
+
+class _MorfoAppState extends ConsumerState<MorfoApp> {
+  StreamSubscription<String>? _notifTaps;
+
+  @override
+  void initState() {
+    super.initState();
+    // Deep-link : taper une notification ouvre la route associée (payload).
+    _notifTaps = ref.read(notificationServiceProvider).onSelect.listen(
+      (String route) {
+        if (route.isNotEmpty) appRouter.go(route);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _notifTaps?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

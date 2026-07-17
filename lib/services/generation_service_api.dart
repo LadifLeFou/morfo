@@ -36,6 +36,7 @@ class ApiGenerationService implements GenerationService {
     required Uint8List imageBytes,
     required String userId,
     String? sourcePath,
+    String? customPrompt,
   }) async {
     try {
       final Response<dynamic> res = await _dio.post<dynamic>(
@@ -44,6 +45,8 @@ class ApiGenerationService implements GenerationService {
           'rc_app_user_id': userId,
           'template_id': template.id,
           'image_base64': base64Encode(imageBytes),
+          if (customPrompt != null && customPrompt.isNotEmpty)
+            'prompt': customPrompt,
         },
       );
       final Map<String, dynamic> j = res.data as Map<String, dynamic>;
@@ -71,6 +74,7 @@ class ApiGenerationService implements GenerationService {
     required Template template,
     required Uint8List imageBytes,
     required String userId,
+    String? customPrompt,
   }) async {
     try {
       final Response<dynamic> res = await _dio.post<dynamic>(
@@ -79,6 +83,8 @@ class ApiGenerationService implements GenerationService {
           'rc_app_user_id': userId,
           'template_id': template.id,
           'image_base64': base64Encode(imageBytes),
+          if (customPrompt != null && customPrompt.isNotEmpty)
+            'prompt': customPrompt,
         },
       );
       return (res.data as Map<String, dynamic>)['request_id'] as String;
@@ -100,14 +106,32 @@ class ApiGenerationService implements GenerationService {
     }
   }
 
+  @override
+  Future<int> fetchCredits(String userId) async {
+    try {
+      final Response<dynamic> res = await _dio.get<dynamic>(
+        '/credits',
+        queryParameters: <String, dynamic>{'rc_app_user_id': userId},
+      );
+      final Map<String, dynamic> j = res.data as Map<String, dynamic>;
+      return (j['credits_left'] as num?)?.toInt() ?? -1;
+    } on DioException {
+      return -1;
+    }
+  }
+
   AppException _mapError(DioException e) {
+    final dynamic data = e.response?.data;
+    final String? message = data is Map && data['message'] is String
+        ? data['message'] as String
+        : null;
     if (e.response?.statusCode == 402) {
-      return const AppException(
-        'Crédits insuffisants.',
+      return AppException(
+        message ?? 'Crédits insuffisants.',
         insufficientCredits: true,
       );
     }
-    return AppException('La génération a échoué. Réessaie.', cause: e);
+    return AppException(message ?? 'La génération a échoué. Réessaie.', cause: e);
   }
 
   String _newId() => '${DateTime.now().microsecondsSinceEpoch}';

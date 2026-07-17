@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app_state.dart';
+import '../../../core/haptics.dart';
 import '../../../core/models/generation_result.dart';
 import '../../../design_system/design_system.dart';
 import '../../home/template_icon.dart';
@@ -10,6 +11,36 @@ import '../../home/template_icon.dart';
 /// Historique — grille des générations passées (persistées), état vide invitant.
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
+
+  Future<void> _confirmClearAll(BuildContext context, WidgetRef ref) async {
+    Haptics.medium();
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        backgroundColor: MorfoColors.surface2,
+        title: Text('Tout effacer ?', style: MorfoType.titleSmall),
+        content: Text(
+          'Toutes tes créations seront retirées de l’historique. Cette action '
+          'est définitive.',
+          style: MorfoType.bodyMedium,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: MorfoType.label),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Tout effacer',
+              style: MorfoType.label.copyWith(color: MorfoColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok ?? false) ref.read(historyProvider.notifier).clear();
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,8 +51,17 @@ class HistoryScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
+          tooltip: 'Retour',
         ),
         title: const Text('Historique'),
+        actions: <Widget>[
+          if (items.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined),
+              tooltip: 'Tout effacer',
+              onPressed: () => _confirmClearAll(context, ref),
+            ),
+        ],
       ),
       body: items.isEmpty
           ? _EmptyHistory(onExplore: () => context.go('/home'))
@@ -34,20 +74,55 @@ class HistoryScreen extends ConsumerWidget {
                 childAspectRatio: 0.72,
               ),
               itemCount: items.length,
-              itemBuilder: (BuildContext context, int i) =>
-                  _HistoryTile(result: items[i]),
+              itemBuilder: (BuildContext context, int i) => _HistoryTile(
+                result: items[i],
+                onDelete: () =>
+                    ref.read(historyProvider.notifier).remove(items[i]),
+              ),
             ),
     );
   }
 }
 
 class _HistoryTile extends StatelessWidget {
-  const _HistoryTile({required this.result});
+  const _HistoryTile({required this.result, required this.onDelete});
   final GenerationResult result;
+  final VoidCallback onDelete;
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    Haptics.medium();
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        backgroundColor: MorfoColors.surface2,
+        title: Text('Supprimer cette création ?', style: MorfoType.titleSmall),
+        content: Text(
+          'Elle disparaîtra de ton historique.',
+          style: MorfoType.bodyMedium,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: MorfoType.label),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Supprimer',
+              style: MorfoType.label.copyWith(color: MorfoColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok ?? false) onDelete();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Pressable(
+    return GestureDetector(
+      onLongPress: () => _confirmDelete(context),
+      child: Pressable(
       onTap: () => context.push('/result', extra: result),
       child: ClipRRect(
         borderRadius: Radii.brMd,
@@ -81,6 +156,7 @@ class _HistoryTile extends StatelessWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }

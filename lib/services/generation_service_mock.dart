@@ -28,6 +28,7 @@ class MockGenerationService implements GenerationService {
     required Uint8List imageBytes,
     required String userId,
     String? sourcePath,
+    String? customPrompt,
   }) async {
     // Délai réaliste (2–4 s).
     await Future<void>.delayed(
@@ -57,6 +58,7 @@ class MockGenerationService implements GenerationService {
     required Template template,
     required Uint8List imageBytes,
     required String userId,
+    String? customPrompt,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 800));
     final String id = _newId();
@@ -77,6 +79,9 @@ class MockGenerationService implements GenerationService {
     }
     return const VideoStatus(VideoPhase.pending);
   }
+
+  @override
+  Future<int> fetchCredits(String userId) async => -1; // géré localement
 
   String _newId() =>
       '${DateTime.now().microsecondsSinceEpoch}_${_rng.nextInt(9999)}';

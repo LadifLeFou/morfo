@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app_state.dart';
+import '../../../core/haptics.dart';
 import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
 
@@ -21,6 +22,7 @@ class CreditsScreen extends ConsumerWidget {
     final bool ok =
         await ref.read(purchasesServiceProvider).purchaseCredits(pack.id);
     if (ok) {
+      Haptics.success();
       credits.add(pack.credits);
       messenger.showSnackBar(
         SnackBar(content: Text('${pack.credits} crédits ajoutés.')),
@@ -38,6 +40,7 @@ class CreditsScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
+          tooltip: 'Retour',
         ),
         title: const Text('Crédits'),
       ),
@@ -73,7 +76,8 @@ class CreditsScreen extends ConsumerWidget {
           ),
           Gap.h16,
           Text(
-            '1 crédit = 1 image · une vidéo coûte 15 crédits.',
+            'Ton abonnement recharge tes crédits chaque semaine. '
+            'Les packs s’ajoutent à ton solde.',
             style: MorfoType.caption,
             textAlign: TextAlign.center,
           ),

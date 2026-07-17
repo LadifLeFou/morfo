@@ -31,6 +31,7 @@ class SettingsScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
+          tooltip: 'Retour',
         ),
         title: const Text('Réglages'),
       ),
@@ -68,17 +69,22 @@ class SettingsScreen extends ConsumerWidget {
           _SettingTile(
             icon: Icons.description_outlined,
             title: 'Conditions d’utilisation',
-            onTap: () {},
+            onTap: () => context.push('/terms'),
           ),
           _SettingTile(
             icon: Icons.shield_outlined,
             title: 'Confidentialité',
-            onTap: () {},
+            onTap: () => context.push('/privacy'),
           ),
           _SettingTile(
             icon: Icons.mail_outline,
             title: 'Contact',
-            onTap: () {},
+            subtitle: 'support@morfo.app',
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Écris-nous à support@morfo.app'),
+              ),
+            ),
           ),
           Gap.h32,
           Center(

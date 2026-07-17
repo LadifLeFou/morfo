@@ -1,0 +1,32 @@
+// ⚠️ TEMPLATE — ne pas compiler tel quel.
+// Copier vers `lib/services/paywall_service_superwall.dart` APRÈS avoir exécuté
+// `flutter pub add superwallkit_flutter`, puis pointer `paywall_service_io.dart`
+// dessus. Vérifie l'API exacte selon la version du SDK Superwall installée.
+
+import 'package:superwallkit_flutter/superwallkit_flutter.dart';
+
+import 'paywall_service.dart';
+
+/// Implémentation Superwall (mobile). Présente un paywall distant A/B testé ;
+/// si Superwall n'a rien à présenter, on retombe sur le paywall natif.
+class SuperwallPaywallService implements PaywallService {
+  SuperwallPaywallService(this._apiKey) {
+    Superwall.configure(_apiKey);
+  }
+
+  final String _apiKey;
+
+  @override
+  Future<bool> presentRemotePaywall({String placement = 'default'}) async {
+    try {
+      // `registerPlacement` déclenche la campagne Superwall associée.
+      // Renvoie true si un paywall distant a été présenté.
+      final PaywallPresentationResult result =
+          await Superwall.shared.registerPlacement(placement);
+      return result.presented;
+    } catch (_) {
+      // En cas d'échec, l'app utilise son paywall natif de secours.
+      return false;
+    }
+  }
+}

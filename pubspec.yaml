@@ -47,6 +47,7 @@ dependencies:
 
   # Config (.env — jamais de secret de modèle IA côté app)
   flutter_dotenv: ^6.0.1
+  video_player: ^2.13.0
 
   # NOTE MONÉTISATION : purchases_flutter (RevenueCat) et superwallkit_flutter
   # (Superwall) sont des SDK iOS/Android uniquement et cassent le build web.
@@ -68,6 +69,7 @@ flutter:
 
   assets:
     - .env
+    - assets/images/
 
   fonts:
     # Display / titres — Clash Display (Fontshare)

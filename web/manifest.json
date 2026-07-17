@@ -1,11 +1,13 @@
 {
-    "name": "morfo",
-    "short_name": "morfo",
+    "name": "Morfo — Transforme tes photos par IA",
+    "short_name": "Morfo",
+    "lang": "fr",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Morfo - AI photo transformation app",
+    "background_color": "#07060D",
+    "theme_color": "#07060D",
+    "description": "Morfo transforme tes photos par IA : portraits stylisés, transformations épiques avant/après et cartes holographiques à partager.",
+    "categories": ["photo", "entertainment", "lifestyle"],
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

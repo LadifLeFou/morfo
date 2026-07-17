@@ -4,6 +4,14 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Morfo a besoin d’accéder à tes photos pour importer l’image à transformer.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Morfo enregistre tes créations dans ta photothèque.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Morfo utilise l’appareil photo pour capturer la photo à transformer.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

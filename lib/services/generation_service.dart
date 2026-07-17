@@ -47,6 +47,7 @@ abstract interface class GenerationService {
     required Uint8List imageBytes,
     required String userId,
     String? sourcePath,
+    String? customPrompt,
   });
 
   /// Vidéo : soumet le job et renvoie un `requestId` à poller.
@@ -54,7 +55,12 @@ abstract interface class GenerationService {
     required Template template,
     required Uint8List imageBytes,
     required String userId,
+    String? customPrompt,
   });
 
   Future<VideoStatus> pollVideo(String requestId);
+
+  /// Solde de crédits côté serveur. Renvoie -1 si inconnu (mode mock → l'app
+  /// gère le solde localement).
+  Future<int> fetchCredits(String userId);
 }

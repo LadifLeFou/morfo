@@ -1,23 +1,22 @@
-/// Catégories éditoriales de templates.
+/// Catégories du catalogue — trends actuels (fini les catégories génériques).
 enum MorfoCategory {
-  epique('Épique'),
-  retro('Rétro'),
+  tendance('Tendance'),
+  aesthetic('Aesthetic'),
   fun('Fun'),
-  glow('Glow'),
-  cinema('Cinéma'),
-  video('Vidéo');
+  jeux('Jeux'),
+  cinema('Cinéma');
 
   const MorfoCategory(this.label);
 
-  /// Libellé affiché (FR).
+  /// Libellé affiché.
   final String label;
 
-  /// Parse depuis le libellé backend (tolérant à la casse/accents manquants).
+  /// Parse depuis le libellé backend (tolérant à la casse).
   static MorfoCategory fromLabel(String raw) {
     final String needle = raw.trim().toLowerCase();
     for (final MorfoCategory c in values) {
       if (c.label.toLowerCase() == needle || c.name == needle) return c;
     }
-    return MorfoCategory.fun;
+    return MorfoCategory.tendance;
   }
 }

@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../app/app_state.dart';
 import '../../../core/models/template.dart';
 import '../../../design_system/design_system.dart';
+import '../../notifications/conversion_notifications.dart';
 import '../generate_args.dart';
 
 /// Import photo — caméra / galerie, permissions gérées, downscale avant envoi.
@@ -55,6 +56,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     if (bytes == null) return;
     final int cost = widget.template.creditCost;
     if (ref.read(creditsProvider) < cost) {
+      ref.read(conversionNotificationsProvider).onCreditsEmpty();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Crédits insuffisants.')),
       );
@@ -79,6 +81,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
+          tooltip: 'Retour',
         ),
         title: const Text('Ta photo'),
       ),
@@ -86,10 +89,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xxl, Gap.xl, Gap.xxl),
         child: Column(
           children: <Widget>[
-            Text(
-              'Style choisi : ${widget.template.title}',
-              style: MorfoType.bodyMedium,
-            ),
+            _StyleHeader(template: widget.template),
             Gap.h24,
             Expanded(
               child: hasPhoto ? _preview() : _chooser(),
@@ -143,6 +143,46 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           icon: Icons.photo_camera_outlined,
           label: 'Prendre une photo',
           onTap: () => _pick(ImageSource.camera),
+        ),
+      ],
+    );
+  }
+}
+
+/// En-tête d'import : vignette « après » du style + nom, pour rappeler le
+/// résultat visé et donner envie d'aller au bout.
+class _StyleHeader extends StatelessWidget {
+  const _StyleHeader({required this.template});
+
+  final Template template;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        ClipRRect(
+          borderRadius: Radii.brMd,
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: Image.asset(
+              'assets/images/preview_${template.id}_after.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
+                  HoloPlaceholder(seed: template.id),
+            ),
+          ),
+        ),
+        Gap.w12,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Style choisi', style: MorfoType.eyebrow),
+              const SizedBox(height: 2),
+              Text(template.title, style: MorfoType.titleSmall),
+            ],
+          ),
         ),
       ],
     );

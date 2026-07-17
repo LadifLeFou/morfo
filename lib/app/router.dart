@@ -4,10 +4,12 @@ import '../core/models/generation_result.dart';
 import '../core/models/template.dart';
 import '../features/credits/presentation/credits_screen.dart';
 import '../features/generation/generate_args.dart';
+import '../features/generation/presentation/custom_prompt_screen.dart';
 import '../features/generation/presentation/generation_screen.dart';
 import '../features/generation/presentation/import_screen.dart';
 import '../features/history/presentation/history_screen.dart';
 import '../features/home/presentation/home_screen.dart';
+import '../features/legal/legal_screen.dart';
 import '../features/home/presentation/template_detail_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/paywall/presentation/paywall_screen.dart';
@@ -21,7 +23,11 @@ final GoRouter appRouter = GoRouter(
   routes: <RouteBase>[
     GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-    GoRoute(path: '/paywall', builder: (_, _) => const PaywallScreen()),
+    GoRoute(
+      path: '/paywall',
+      builder: (_, GoRouterState state) =>
+          PaywallScreen(resumeArgs: state.extra as GenerateArgs?),
+    ),
     GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
     GoRoute(
       path: '/template',
@@ -33,6 +39,7 @@ final GoRouter appRouter = GoRouter(
       builder: (_, GoRouterState state) =>
           ImportScreen(template: state.extra! as Template),
     ),
+    GoRoute(path: '/custom', builder: (_, _) => const CustomPromptScreen()),
     GoRoute(
       path: '/generate',
       builder: (_, GoRouterState state) =>
@@ -42,6 +49,14 @@ final GoRouter appRouter = GoRouter(
       path: '/result',
       builder: (_, GoRouterState state) =>
           ResultScreen(result: state.extra! as GenerationResult),
+    ),
+    GoRoute(
+      path: '/terms',
+      builder: (_, _) => const LegalScreen(doc: LegalDoc.terms),
+    ),
+    GoRoute(
+      path: '/privacy',
+      builder: (_, _) => const LegalScreen(doc: LegalDoc.privacy),
     ),
     GoRoute(path: '/history', builder: (_, _) => const HistoryScreen()),
     GoRoute(path: '/credits', builder: (_, _) => const CreditsScreen()),

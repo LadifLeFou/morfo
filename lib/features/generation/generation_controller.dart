@@ -54,6 +54,7 @@ class GenerationController extends Notifier<GenState> {
     required Template template,
     required Uint8List bytes,
     String? sourcePath,
+    String? customPrompt,
   }) async {
     _cancelled = false;
     state = const GenRunning();
@@ -62,8 +63,10 @@ class GenerationController extends Notifier<GenState> {
 
     try {
       final GenerationResult result = template.isVideo
-          ? await _runVideo(service, template, bytes, userId, sourcePath)
-          : await _runImage(service, template, bytes, userId, sourcePath);
+          ? await _runVideo(
+              service, template, bytes, userId, sourcePath, customPrompt)
+          : await _runImage(
+              service, template, bytes, userId, sourcePath, customPrompt);
 
       if (_cancelled) return;
       ref.read(historyProvider.notifier).add(result);
@@ -83,12 +86,14 @@ class GenerationController extends Notifier<GenState> {
     Uint8List bytes,
     String userId,
     String? sourcePath,
+    String? customPrompt,
   ) async {
     final GenerationOutcome outcome = await service.generateImage(
       template: template,
       imageBytes: bytes,
       userId: userId,
       sourcePath: sourcePath,
+      customPrompt: customPrompt,
     );
     ref.read(creditsProvider.notifier).applyOutcome(
           template.creditCost,
@@ -103,15 +108,18 @@ class GenerationController extends Notifier<GenState> {
     Uint8List bytes,
     String userId,
     String? sourcePath,
+    String? customPrompt,
   ) async {
     final String requestId = await service.submitVideo(
       template: template,
       imageBytes: bytes,
       userId: userId,
+      customPrompt: customPrompt,
     );
 
-    // Polling jusqu'à complétion ou échec.
+    // Polling jusqu'à complétion ou échec (vidéo : ~1-3 min).
     while (!_cancelled) {
+      await Future<void>.delayed(const Duration(seconds: 3));
       final VideoStatus status = await service.pollVideo(requestId);
       if (status.phase == VideoPhase.completed) {
         ref.read(creditsProvider.notifier).applyOutcome(template.creditCost, -1);

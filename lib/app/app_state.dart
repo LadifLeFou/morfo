@@ -6,8 +6,9 @@ import '../core/persistence.dart';
 import '../services/purchases_service.dart';
 import '../services/service_providers.dart';
 
-/// Crédits gratuits offerts à un nouvel utilisateur (démo).
-const int kInitialCredits = 30;
+/// Solde de démarrage en mode démo (aligné sur l'allocation hebdo d'un abonné).
+/// En mode réel, le solde vient du serveur (source de vérité).
+const int kInitialCredits = 500;
 
 // — Templates —
 final FutureProvider<List<Template>> templatesProvider =
@@ -62,6 +63,13 @@ class CreditsNotifier extends Notifier<int> {
     _persist();
   }
 
+  /// Fixe le solde depuis le serveur (source de vérité en mode réel).
+  void setBalance(int value) {
+    if (value < 0) return; // -1 = inconnu (mock) → on garde le local
+    state = value;
+    _persist();
+  }
+
   /// Réconcilie après une génération : valeur backend si connue, sinon décrément local.
   void applyOutcome(int cost, int creditsLeft) {
     final int next = creditsLeft >= 0 ? creditsLeft : state - cost;
@@ -83,6 +91,11 @@ class HistoryNotifier extends Notifier<List<GenerationResult>> {
     ref.read(prefsProvider).setHistory(state);
   }
 
+  void remove(GenerationResult result) {
+    state = state.where((GenerationResult r) => r.id != result.id).toList();
+    ref.read(prefsProvider).setHistory(state);
+  }
+
   void clear() {
     state = <GenerationResult>[];
     ref.read(prefsProvider).setHistory(state);
@@ -93,3 +106,21 @@ final NotifierProvider<HistoryNotifier, List<GenerationResult>>
     historyProvider =
     NotifierProvider<HistoryNotifier, List<GenerationResult>>(
         HistoryNotifier.new);
+
+// — Favoris (styles épinglés) —
+class FavoritesNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => ref.read(prefsProvider).favorites.toSet();
+
+  bool isFavorite(String id) => state.contains(id);
+
+  void toggle(String id) {
+    final Set<String> next = <String>{...state};
+    if (!next.remove(id)) next.add(id);
+    state = next;
+    ref.read(prefsProvider).setFavorites(next.toList());
+  }
+}
+
+final NotifierProvider<FavoritesNotifier, Set<String>> favoritesProvider =
+    NotifierProvider<FavoritesNotifier, Set<String>>(FavoritesNotifier.new);

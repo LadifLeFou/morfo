@@ -19,4 +19,8 @@ abstract final class Env {
   static String get revenueCatKey => _get('REVENUECAT_PUBLIC_SDK_KEY') ?? '';
 
   static String get superwallKey => _get('SUPERWALL_API_KEY') ?? '';
+
+  /// Secret partagé app↔backend (header `X-App-Secret`). Bouclier anti-abus ;
+  /// ce n'est pas un secret fort, juste pour filtrer les appels sauvages.
+  static String get appSecret => _get('MORFO_APP_SECRET') ?? '';
 }

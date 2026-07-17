@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/widgets/favorite_button.dart';
 import '../../../core/models/template.dart';
 import '../../../design_system/design_system.dart';
 import '../template_icon.dart';
@@ -31,9 +32,11 @@ class TemplateDetailScreen extends StatelessWidget {
                 child: HoloCard(
                   borderRadius: 0,
                   eyebrow: template.category.label,
-                  child: Hero(
-                    tag: 'tpl_${template.id}',
-                    child: HoloPlaceholder(
+                  child: StylePreview(
+                    beforeAsset: beforePreview(template.id),
+                    afterAsset: afterPreview(template.id),
+                    showTags: true,
+                    fallback: HoloPlaceholder(
                       seed: template.id,
                       icon: iconForTemplate(template),
                     ),
@@ -59,13 +62,20 @@ class TemplateDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          // Bouton retour
+          // Barre haute : retour + favori
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(Gap.sm),
-              child: _CircleButton(
-                icon: Icons.arrow_back,
-                onTap: () => context.pop(),
+              child: Row(
+                children: <Widget>[
+                  _CircleButton(
+                    icon: Icons.arrow_back,
+                    label: 'Retour',
+                    onTap: () => context.pop(),
+                  ),
+                  const Spacer(),
+                  FavoriteButton(templateId: template.id, size: 22),
+                ],
               ),
             ),
           ),
@@ -84,8 +94,8 @@ class TemplateDetailScreen extends StatelessWidget {
                 ),
               ),
               child: GradientButton(
-                label: 'Utiliser cette photo',
-                icon: Icons.add_a_photo_outlined,
+                label: 'Essayer ce style',
+                icon: Icons.auto_awesome,
                 onPressed: () => context.push('/import', extra: template),
               ),
             ),
@@ -122,24 +132,33 @@ class _CostChip extends StatelessWidget {
 }
 
 class _CircleButton extends StatelessWidget {
-  const _CircleButton({required this.icon, required this.onTap});
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+    this.label,
+  });
   final IconData icon;
   final VoidCallback onTap;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
-    return Pressable(
-      onTap: onTap,
-      scale: 0.9,
-      child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: MorfoColors.voidColor.withValues(alpha: 0.5),
-          border: Border.all(color: MorfoColors.stroke),
+    return Semantics(
+      button: true,
+      label: label,
+      child: Pressable(
+        onTap: onTap,
+        scale: 0.9,
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: MorfoColors.voidColor.withValues(alpha: 0.5),
+            border: Border.all(color: MorfoColors.stroke),
+          ),
+          child: Icon(icon, size: 20, color: MorfoColors.ink),
         ),
-        child: Icon(icon, size: 20, color: MorfoColors.ink),
       ),
     );
   }

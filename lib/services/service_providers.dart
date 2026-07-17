@@ -12,9 +12,10 @@ final Provider<Dio> dioProvider = Provider<Dio>((Ref ref) {
     BaseOptions(
       baseUrl: Env.apiUrl,
       connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 120),
       headers: <String, dynamic>{
         'Authorization': 'Bearer ${Env.supabaseAnonKey}',
+        if (Env.appSecret.isNotEmpty) 'X-App-Secret': Env.appSecret,
       },
     ),
   );

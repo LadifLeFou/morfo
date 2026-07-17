@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../design_system/design_system.dart';
 import '../../../app/app_state.dart';
+import '../../../core/strings.dart';
+import '../../../design_system/design_system.dart';
+import '../../notifications/conversion_notifications.dart';
+
+/// Chemins des vraies photos de démo (avant/après), par id de style.
+String _before(String id) => 'assets/images/preview_${id}_before.jpg';
+String _after(String id) => 'assets/images/preview_${id}_after.jpg';
 
 class _Slide {
   const _Slide({
@@ -31,32 +37,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _page = 0;
 
   late final List<_Slide> _slides = <_Slide>[
-    const _Slide(
-      eyebrow: 'Avant · Après',
-      title: 'Transforme tes photos\nen métamorphoses',
-      body: 'Un portrait, un style, une révélation. Glisse pour comparer.',
+    _Slide(
+      eyebrow: S.onbEyebrow1,
+      title: S.onbTitle1,
+      body: S.onbBody1,
       visual: BeforeAfterSlider(
         aspectRatio: 1,
-        before: HoloPlaceholder(seed: 'onb_avant', icon: Icons.person_outline),
-        after: HoloPlaceholder(seed: 'onb_epic', icon: Icons.shield_moon_outlined),
+        before: Image.asset(_before('renaissance'), fit: BoxFit.cover),
+        after: Image.asset(_after('renaissance'), fit: BoxFit.cover),
       ),
     ),
     _Slide(
-      eyebrow: 'Des dizaines de styles',
-      title: 'Épique, rétro, fun,\ncinéma…',
-      body: 'Choisis un style, importe une photo, laisse Morfo opérer.',
+      eyebrow: S.onbEyebrow2,
+      title: S.onbTitle2,
+      body: S.onbBody2,
       visual: _StylesPreview(),
     ),
-    const _Slide(
-      eyebrow: 'Ta carte à collectionner',
-      title: 'Un résultat que tu\nauras envie de partager',
-      body: 'Chaque rendu devient une carte holographique unique.',
+    _Slide(
+      eyebrow: S.onbEyebrow3,
+      title: S.onbTitle3,
+      body: S.onbBody3,
       visual: HoloCard(
         aspectRatio: 1,
-        eyebrow: 'Guerrier épique',
-        title: 'Ton résultat',
+        eyebrow: 'Épique',
+        title: 'Morfo',
         interactive: true,
-        child: HoloPlaceholder(seed: 'onb_card', icon: Icons.auto_awesome),
+        child: Image.asset(_after('blockbuster'), fit: BoxFit.cover),
       ),
     ),
   ];
@@ -69,6 +75,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _finish() {
     ref.read(onboardingProvider.notifier).complete();
+    ref.read(conversionNotificationsProvider).onOnboarded();
     context.go('/paywall');
   }
 
@@ -92,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: _finish,
-                child: Text('Passer', style: MorfoType.label),
+                child: Text(S.skip, style: MorfoType.label),
               ),
             ),
             Expanded(
@@ -101,18 +108,62 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 onPageChanged: (int i) => setState(() => _page = i),
                 itemCount: _slides.length,
                 itemBuilder: (BuildContext context, int i) {
-                  final _Slide s = _slides[i];
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      AspectRatio(aspectRatio: 1, child: s.visual),
-                      Gap.h32,
-                      Text(s.eyebrow, style: MorfoType.eyebrow),
-                      Gap.h8,
-                      Text(s.title, style: MorfoType.displayMedium),
-                      Gap.h12,
-                      Text(s.body, style: MorfoType.bodyLarge),
-                    ],
+                  return AnimatedBuilder(
+                    animation: _controller,
+                    builder: (BuildContext context, Widget? _) {
+                      // Position de défilement (delta = distance au centre).
+                      double page = _page.toDouble();
+                      if (_controller.hasClients &&
+                          _controller.position.haveDimensions) {
+                        page = _controller.page ?? page;
+                      }
+                      final double delta = i - page;
+                      final double t = (1 - delta.abs()).clamp(0.0, 1.0);
+                      final _Slide s = _slides[i];
+
+                      return Opacity(
+                        opacity: 0.2 + 0.8 * t,
+                        child: Transform.translate(
+                          offset: Offset(0, (1 - t) * 22),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 360),
+                                  child: Transform.translate(
+                                    // Parallaxe : le visuel glisse à contre-sens.
+                                    offset: Offset(delta * -34, 0),
+                                    child: Transform.scale(
+                                      scale: 0.9 + 0.1 * t,
+                                      child: AspectRatio(
+                                        aspectRatio: 1,
+                                        child: s.visual,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Gap.h32,
+                                Text(s.eyebrow, style: MorfoType.eyebrow),
+                                Gap.h8,
+                                Text(
+                                  s.title,
+                                  textAlign: TextAlign.center,
+                                  style: MorfoType.displayMedium,
+                                ),
+                                Gap.h12,
+                                Text(
+                                  s.body,
+                                  textAlign: TextAlign.center,
+                                  style: MorfoType.bodyLarge,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -121,7 +172,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             _Dots(count: _slides.length, active: _page),
             Gap.h24,
             GradientButton(
-              label: isLast ? 'Commencer' : 'Suivant',
+              label: isLast ? S.start : S.next,
               icon: isLast ? Icons.auto_awesome : null,
               onPressed: _next,
             ),
@@ -163,11 +214,12 @@ class _Dots extends StatelessWidget {
 class _StylesPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    const List<(String, IconData)> items = <(String, IconData)>[
-      ('cyberpunk', Icons.bolt_outlined),
-      ('anime', Icons.brush_outlined),
-      ('golden_hour', Icons.wb_twilight),
-      ('film_noir', Icons.movie_outlined),
+    // De vrais résultats « après » — donne envie dès l'onboarding.
+    const List<(String, String)> items = <(String, String)>[
+      ('selfie_star', 'Célébrité'),
+      ('golden_hour', 'Golden hour'),
+      ('old_money', 'Old money'),
+      ('digicam', 'Digicam'),
     ];
     return GridView.count(
       crossAxisCount: 2,
@@ -175,12 +227,45 @@ class _StylesPreview extends StatelessWidget {
       crossAxisSpacing: Gap.md,
       physics: const NeverScrollableScrollPhysics(),
       children: <Widget>[
-        for (final (String seed, IconData icon) in items)
-          ClipRRect(
-            borderRadius: Radii.brMd,
-            child: HoloPlaceholder(seed: seed, icon: icon),
-          ),
+        for (final (String id, String label) in items)
+          _StyleThumb(id: id, label: label),
       ],
+    );
+  }
+}
+
+/// Vignette « après » avec voile bas + label — mini-preview de style.
+class _StyleThumb extends StatelessWidget {
+  const _StyleThumb({required this.id, required this.label});
+
+  final String id;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: Radii.brMd,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Image.asset(
+            _after(id),
+            fit: BoxFit.cover,
+            errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
+                HoloPlaceholder(seed: id),
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(gradient: MorfoColors.scrim),
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(Gap.sm),
+              child: Text(label, style: MorfoType.eyebrow),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

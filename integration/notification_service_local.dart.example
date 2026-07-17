@@ -1,0 +1,108 @@
+// ⚠️ TEMPLATE — ne pas compiler tel quel.
+// Copier vers `lib/services/notification_service_local.dart` APRÈS :
+//   flutter pub add flutter_local_notifications timezone
+// puis pointer `notification_service_io.dart` dessus. Vérifier l'API selon la
+// version installée du plugin.
+
+import 'dart:async';
+
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+import 'notification_service.dart';
+
+/// Notifications locales natives (iOS / Android).
+class LocalNotificationService implements NotificationService {
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+
+  final StreamController<String> _taps = StreamController<String>.broadcast();
+
+  @override
+  Stream<String> get onSelect => _taps.stream;
+
+  static const AndroidNotificationDetails _android =
+      AndroidNotificationDetails(
+    'morfo_conversion',
+    'Rappels Morfo',
+    channelDescription: 'Rappels pour finir tes métamorphoses',
+    importance: Importance.high,
+    priority: Priority.high,
+  );
+
+  static const DarwinNotificationDetails _ios = DarwinNotificationDetails();
+
+  NotificationDetails get _details =>
+      const NotificationDetails(android: _android, iOS: _ios);
+
+  @override
+  Future<void> init() async {
+    tz.initializeTimeZones();
+    const InitializationSettings settings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
+    );
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse r) {
+        final String? p = r.payload;
+        if (p != null && p.isNotEmpty) _taps.add(p);
+      },
+    );
+
+    // Tap ayant lancé l'app à froid.
+    final NotificationAppLaunchDetails? launch =
+        await _plugin.getNotificationAppLaunchDetails();
+    final String? p = launch?.notificationResponse?.payload;
+    if ((launch?.didNotificationLaunchApp ?? false) && p != null && p.isNotEmpty) {
+      // Émettre après le 1er frame pour laisser le routeur se monter.
+      Future<void>.microtask(() => _taps.add(p));
+    }
+  }
+
+  @override
+  Future<bool> requestPermission() async {
+    // iOS
+    final bool? ios = await _plugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+    // Android 13+
+    final bool? android = await _plugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    return (ios ?? android ?? true);
+  }
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required String title,
+    required String body,
+    required Duration after,
+    String? payload,
+  }) async {
+    final tz.TZDateTime when = tz.TZDateTime.now(tz.local).add(after);
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      when,
+      _details,
+      payload: payload,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  @override
+  Future<void> cancel(int id) => _plugin.cancel(id);
+
+  @override
+  Future<void> cancelAll() => _plugin.cancelAll();
+}

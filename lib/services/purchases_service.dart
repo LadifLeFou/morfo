@@ -2,6 +2,9 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/env.dart';
+import 'purchases_service_factory.dart';
+
 /// Périodicité d'un abonnement.
 enum OfferPeriod { weekly, annual }
 
@@ -14,6 +17,7 @@ class SubscriptionOffer {
     required this.period,
     this.subtitle = '',
     this.highlighted = false,
+    this.trialDays = 0,
   });
 
   final String id;
@@ -22,6 +26,12 @@ class SubscriptionOffer {
   final String subtitle;
   final OfferPeriod period;
   final bool highlighted;
+
+  /// Nombre de jours d'essai gratuit (0 = aucun). Mappé depuis l'offre
+  /// d'introduction RevenueCat / App Store Connect.
+  final int trialDays;
+
+  bool get hasTrial => trialDays > 0;
 }
 
 /// Pack de crédits (offerings RevenueCat).
@@ -86,6 +96,7 @@ class DemoPurchasesService implements PurchasesService {
           subtitle: 'soit 0,58 €/semaine',
           period: OfferPeriod.annual,
           highlighted: true,
+          trialDays: 3,
         ),
       ];
 
@@ -125,5 +136,9 @@ class DemoPurchasesService implements PurchasesService {
       Future<void>.delayed(const Duration(milliseconds: 900));
 }
 
+/// Sélectionne RevenueCat (mobile) ou la démo (web/desktop) via la factory
+/// à imports conditionnels. La clé publique vient de `.env`.
 final Provider<PurchasesService> purchasesServiceProvider =
-    Provider<PurchasesService>((Ref ref) => DemoPurchasesService());
+    Provider<PurchasesService>(
+  (Ref ref) => createPurchasesService(Env.revenueCatKey),
+);

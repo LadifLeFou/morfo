@@ -17,9 +17,14 @@ class Prefs {
   static const String _kOnboarded = 'morfo_onboarded';
   static const String _kCredits = 'morfo_credits';
   static const String _kHistory = 'morfo_history';
+  static const String _kFavorites = 'morfo_favorites';
 
   bool get onboarded => _sp.getBool(_kOnboarded) ?? false;
   Future<void> setOnboarded(bool value) => _sp.setBool(_kOnboarded, value);
+
+  List<String> get favorites => _sp.getStringList(_kFavorites) ?? <String>[];
+  Future<void> setFavorites(List<String> ids) =>
+      _sp.setStringList(_kFavorites, ids);
 
   int? get credits => _sp.getInt(_kCredits);
   Future<void> setCredits(int value) => _sp.setInt(_kCredits, value);

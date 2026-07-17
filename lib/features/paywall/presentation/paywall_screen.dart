@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/app_state.dart';
 import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
+import '../../generation/generate_args.dart';
+import '../../notifications/conversion_notifications.dart';
 
 final FutureProvider<List<SubscriptionOffer>> _offersProvider =
     FutureProvider<List<SubscriptionOffer>>(
@@ -20,7 +22,11 @@ const List<String> _benefits = <String>[
 
 /// Paywall natif de secours — Superwall prioritaire côté mobile (voir README).
 class PaywallScreen extends ConsumerStatefulWidget {
-  const PaywallScreen({super.key});
+  const PaywallScreen({super.key, this.resumeArgs});
+
+  /// Si l'utilisateur arrive ici depuis une génération « teasée », on reprend
+  /// cette génération dès l'abonnement souscrit.
+  final GenerateArgs? resumeArgs;
 
   @override
   ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
@@ -43,6 +49,18 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     setState(() => _busy = false);
     if (ok) {
       ref.read(subscriptionProvider.notifier).setSubscribed(true);
+      _onUnlocked();
+    }
+  }
+
+  /// Après déblocage : reprend la génération en attente, sinon va au home.
+  void _onUnlocked() {
+    // Converti → on annule les relances de reconquête programmées.
+    ref.read(conversionNotificationsProvider).onConverted();
+    final GenerateArgs? resume = widget.resumeArgs;
+    if (resume != null) {
+      context.pushReplacement('/generate', extra: resume);
+    } else {
       context.go('/home');
     }
   }
@@ -52,7 +70,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     if (!mounted) return;
     if (ok) {
       ref.read(subscriptionProvider.notifier).setSubscribed(true);
-      context.go('/home');
+      _onUnlocked();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Aucun achat à restaurer.')),
@@ -77,9 +95,10 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 child: HoloCard(
                   eyebrow: 'Portrait vivant',
                   title: 'Passe en illimité',
-                  child: HoloPlaceholder(
-                    seed: 'paywall_hero',
-                    icon: Icons.auto_awesome,
+                  child: StylePreview(
+                    beforeAsset: 'assets/images/preview_renaissance_before.jpg',
+                    afterAsset: 'assets/images/preview_renaissance_after.jpg',
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
               ),
@@ -110,13 +129,21 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ),
               Gap.h16,
               GradientButton(
-                label: 'Continuer',
+                label: _ctaLabel(offers),
+                icon: _currentOffer(offers)?.hasTrial ?? false
+                    ? Icons.lock_open_rounded
+                    : null,
                 loading: _busy,
                 onPressed: offers.hasValue
                     ? () => _subscribe(offers.requireValue)
                     : null,
               ),
-              Gap.h12,
+              Gap.h8,
+              if (_currentOffer(offers)?.hasTrial ?? false)
+                _TrialLine(offer: _currentOffer(offers)!),
+              Gap.h8,
+              const _SubscriptionDisclosure(),
+              Gap.h8,
               Center(
                 child: TextButton(
                   onPressed: _restore,
@@ -143,6 +170,40 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       .firstWhere((SubscriptionOffer o) => o.highlighted,
           orElse: () => list.first)
       .id;
+
+  /// Offre actuellement sélectionnée (ou celle par défaut).
+  SubscriptionOffer? _currentOffer(
+      AsyncValue<List<SubscriptionOffer>> offers) {
+    if (!offers.hasValue) return null;
+    final List<SubscriptionOffer> list = offers.requireValue;
+    if (list.isEmpty) return null;
+    final String id = _selected ?? _defaultId(list);
+    return list.where((SubscriptionOffer o) => o.id == id).firstOrNull;
+  }
+
+  String _ctaLabel(AsyncValue<List<SubscriptionOffer>> offers) {
+    final SubscriptionOffer? o = _currentOffer(offers);
+    if (o != null && o.hasTrial) {
+      return 'Commencer mes ${o.trialDays} jours gratuits';
+    }
+    return 'Continuer';
+  }
+}
+
+/// Ligne rassurante sous le CTA quand l'offre inclut un essai gratuit.
+class _TrialLine extends StatelessWidget {
+  const _TrialLine({required this.offer});
+  final SubscriptionOffer offer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Gratuit pendant ${offer.trialDays} jours, puis ${offer.price}. '
+      'Annule quand tu veux, sans frais.',
+      textAlign: TextAlign.center,
+      style: MorfoType.caption.copyWith(color: MorfoColors.ink),
+    );
+  }
 }
 
 class _BenefitRow extends StatelessWidget {
@@ -211,13 +272,19 @@ class _OfferCard extends StatelessWidget {
                   Row(
                     children: <Widget>[
                       Text(offer.title, style: MorfoType.titleSmall),
-                      if (offer.highlighted) ...<Widget>[
+                      if (offer.hasTrial) ...<Widget>[
+                        Gap.w8,
+                        _TrialBadge(days: offer.trialDays),
+                      ] else if (offer.highlighted) ...<Widget>[
                         Gap.w8,
                         const _PopularBadge(),
                       ],
                     ],
                   ),
-                  if (offer.subtitle.isNotEmpty)
+                  if (offer.hasTrial)
+                    Text('${offer.trialDays} jours gratuits, puis ${offer.price}',
+                        style: MorfoType.caption)
+                  else if (offer.subtitle.isNotEmpty)
                     Text(offer.subtitle, style: MorfoType.caption),
                 ],
               ),
@@ -261,6 +328,30 @@ class _RadioDot extends StatelessWidget {
   }
 }
 
+class _TrialBadge extends StatelessWidget {
+  const _TrialBadge({required this.days});
+  final int days;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        gradient: MorfoColors.holoGradient,
+        borderRadius: BorderRadius.circular(Radii.pill),
+      ),
+      child: Text(
+        '$days JOURS GRATUITS',
+        style: MorfoType.eyebrow.copyWith(
+          color: MorfoColors.voidColor,
+          fontSize: 10,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+}
+
 class _PopularBadge extends StatelessWidget {
   const _PopularBadge();
 
@@ -299,6 +390,24 @@ class _OffersSkeleton extends StatelessWidget {
   }
 }
 
+/// Mention d'abonnement exigée par Apple (renouvellement auto, prix/période,
+/// gestion). Le détail exact du prix est affiché sur chaque offre au-dessus.
+class _SubscriptionDisclosure extends StatelessWidget {
+  const _SubscriptionDisclosure();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Abonnement à renouvellement automatique. Le paiement est prélevé sur '
+      'ton compte Apple à la confirmation. Il se renouvelle sauf annulation au '
+      'moins 24 h avant la fin de la période ; gère-le à tout moment dans les '
+      'Réglages de ton compte App Store.',
+      textAlign: TextAlign.center,
+      style: MorfoType.caption,
+    );
+  }
+}
+
 class _LegalRow extends StatelessWidget {
   const _LegalRow();
 
@@ -310,12 +419,12 @@ class _LegalRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           TextButton(
-            onPressed: () {},
+            onPressed: () => context.push('/terms'),
             child: Text('Conditions', style: MorfoType.caption),
           ),
           Text('·', style: MorfoType.caption),
           TextButton(
-            onPressed: () {},
+            onPressed: () => context.push('/privacy'),
             child: Text('Confidentialité', style: MorfoType.caption),
           ),
         ],

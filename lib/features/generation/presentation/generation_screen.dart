@@ -4,18 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_state.dart';
 import '../../../core/haptics.dart';
+import '../../../core/strings.dart';
 import '../../../design_system/design_system.dart';
+import '../../notifications/conversion_notifications.dart';
 import '../generate_args.dart';
 import '../generation_controller.dart';
 
-const List<String> _steps = <String>[
-  'Analyse du visage…',
-  'Application du style…',
-  'Rendu final…',
-];
-
-/// Écran de génération — anneau holo, micro-copie rotative, annulation.
+/// Écran de génération — anneau holo avec pourcentage, micro-copie, annulation.
 class GenerationScreen extends ConsumerStatefulWidget {
   const GenerationScreen({super.key, required this.args});
 
@@ -25,17 +22,53 @@ class GenerationScreen extends ConsumerStatefulWidget {
   ConsumerState<GenerationScreen> createState() => _GenerationScreenState();
 }
 
-class _GenerationScreenState extends ConsumerState<GenerationScreen> {
+class _GenerationScreenState extends ConsumerState<GenerationScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _timer;
   int _step = 0;
+  late final AnimationController _progress;
+
+  /// L'utilisateur était-il déjà abonné en entrant sur l'écran ?
+  /// Non → on joue l'aperçu de génération puis on présente le paywall.
+  late final bool _subscribed = ref.read(subscriptionProvider);
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _start());
-    _timer = Timer.periodic(const Duration(milliseconds: 1600), (_) {
-      if (mounted) setState(() => _step = (_step + 1) % _steps.length);
+
+    if (_subscribed) {
+      // Abonné : vraie génération. Progression qui monte puis ralentit à ~97 %
+      // jusqu'à ce que le résultat arrive (GenDone).
+      _progress = AnimationController(
+        vsync: this,
+        duration: Duration(seconds: widget.args.template.isVideo ? 110 : 30),
+      )..forward();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+    } else {
+      // Non abonné : aperçu convaincant qui va jusqu'à 100 %, puis paywall.
+      _progress = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 4200),
+      );
+      _progress.forward().whenComplete(_goPaywall);
+    }
+
+    _timer = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+      if (mounted) setState(() => _step = (_step + 1) % 3);
     });
+  }
+
+  /// Fin de l'aperçu (utilisateur non abonné) → écran d'abonnement, en
+  /// transmettant les arguments pour reprendre la génération après paiement.
+  void _goPaywall() {
+    if (!mounted) return;
+    Haptics.success();
+    // Intention forte : il a « généré » mais doit payer. On programme les
+    // relances de reconquête (annulées s'il souscrit).
+    ref
+        .read(conversionNotificationsProvider)
+        .onGenerationAbandoned(widget.args.template.title);
+    context.pushReplacement('/paywall', extra: widget.args);
   }
 
   void _start() {
@@ -43,12 +76,14 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
           template: widget.args.template,
           bytes: widget.args.bytes,
           sourcePath: widget.args.sourcePath,
+          customPrompt: widget.args.customPrompt,
         );
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _progress.dispose();
     super.dispose();
   }
 
@@ -62,6 +97,7 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
     ref.listen<GenState>(generationControllerProvider,
         (GenState? _, GenState next) {
       if (next is GenDone) {
+        _progress.stop();
         Haptics.success();
         context.pushReplacement('/result', extra: next.result);
       }
@@ -75,26 +111,46 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const ProgressRingHolo(
-              size: 210,
-              child: Icon(Icons.auto_awesome,
-                  color: MorfoColors.holoPink, size: 30),
+            AnimatedBuilder(
+              animation: _progress,
+              builder: (BuildContext context, Widget? _) {
+                // Abonné : on plafonne à 97 % jusqu'au vrai résultat.
+                // Aperçu : on laisse filer jusqu'à 100 %.
+                final double cap = _subscribed ? 0.97 : 1.0;
+                final double p =
+                    Curves.easeOut.transform(_progress.value) * cap;
+                return ProgressRingHolo(
+                  progress: p,
+                  size: 210,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text('${(p * 100).round()}',
+                          style: MorfoType.displayLarge),
+                      Text('%', style: MorfoType.caption),
+                    ],
+                  ),
+                );
+              },
             ),
             Gap.h32,
             AnimatedSwitcher(
               duration: Motion.base,
               child: Text(
-                _steps[_step],
-                key: ValueKey<int>(_step),
+                widget.args.template.isVideo ? S.genVideo : S.genSteps[_step],
+                key: ValueKey<int>(widget.args.template.isVideo ? -1 : _step),
                 style: MorfoType.titleSmall,
               ),
             ),
             Gap.h8,
-            Text('Cela prend quelques secondes', style: MorfoType.caption),
+            Text(
+              widget.args.template.isVideo ? S.genWaitVideo : S.genWaitImage,
+              style: MorfoType.caption,
+            ),
             Gap.h32,
             TextButton(
               onPressed: _cancel,
-              child: Text('Annuler', style: MorfoType.label),
+              child: Text(S.cancel, style: MorfoType.label),
             ),
           ],
         ),
@@ -118,20 +174,20 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen> {
               Gap.h32,
               if (state.insufficientCredits)
                 GradientButton(
-                  label: 'Obtenir des crédits',
+                  label: S.getCredits,
                   icon: Icons.bolt,
                   onPressed: () => context.push('/credits'),
                 )
               else
                 GradientButton(
-                  label: 'Réessayer',
+                  label: S.retry,
                   icon: Icons.refresh,
                   onPressed: _start,
                 ),
               Gap.h12,
               TextButton(
                 onPressed: () => context.pop(),
-                child: Text('Retour', style: MorfoType.label),
+                child: Text(S.back, style: MorfoType.label),
               ),
             ],
           ),
