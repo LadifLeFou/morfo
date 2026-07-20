@@ -8,6 +8,7 @@ import '../../core/models/generation_result.dart';
 import '../../core/models/template.dart';
 import '../../services/generation_service.dart';
 import '../../services/service_providers.dart';
+import '../../core/strings.dart';
 
 /// État d'une génération en cours.
 sealed class GenState {
@@ -76,7 +77,7 @@ class GenerationController extends Notifier<GenState> {
       state = GenError(e.message, insufficientCredits: e.insufficientCredits);
     } catch (_) {
       if (_cancelled) return;
-      state = const GenError('La génération a échoué. Réessaie.');
+      state = GenError(S.genFailed);
     }
   }
 
@@ -126,7 +127,7 @@ class GenerationController extends Notifier<GenState> {
         return GenerationResult(
           id: requestId,
           templateId: template.id,
-          templateTitle: template.title,
+          templateTitle: template.displayTitle,
           category: template.category,
           outputUrl: status.url ?? 'morfo://demo/video/$requestId',
           kind: template.kind,
@@ -135,10 +136,10 @@ class GenerationController extends Notifier<GenState> {
         );
       }
       if (status.phase == VideoPhase.failed) {
-        throw const AppException('La génération a échoué. Réessaie.');
+        throw AppException(S.genFailed);
       }
     }
-    throw const AppException('Génération annulée.');
+    throw AppException(S.genCancelled);
   }
 }
 

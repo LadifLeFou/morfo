@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -67,7 +68,7 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen>
     // relances de reconquête (annulées s'il souscrit).
     ref
         .read(conversionNotificationsProvider)
-        .onGenerationAbandoned(widget.args.template.title);
+        .onGenerationAbandoned(widget.args.template.displayTitle);
     context.pushReplacement('/paywall', extra: widget.args);
   }
 
@@ -106,56 +107,150 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen>
     final GenState state = ref.watch(generationControllerProvider);
     if (state is GenError) return _errorView(state);
 
+    // Respecte « reduce motion » : on fige la scène, on garde la composition.
+    final bool reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
     return MorfoScaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AnimatedBuilder(
-              animation: _progress,
-              builder: (BuildContext context, Widget? _) {
-                // Abonné : on plafonne à 97 % jusqu'au vrai résultat.
-                // Aperçu : on laisse filer jusqu'à 100 %.
-                final double cap = _subscribed ? 0.97 : 1.0;
-                final double p =
-                    Curves.easeOut.transform(_progress.value) * cap;
-                return ProgressRingHolo(
-                  progress: p,
-                  size: 210,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text('${(p * 100).round()}',
-                          style: MorfoType.displayLarge),
-                      Text('%', style: MorfoType.caption),
-                    ],
+      body: Stack(
+        children: <Widget>[
+          // Fond vivant : la nuée de papillons, bien plus présente qu'au
+          // splash, occupe le regard pendant toute l'attente.
+          Positioned.fill(
+            child: ButterflyField(
+              reduce: reduce,
+              count: 16,
+              intensity: 3.6,
+              cycle: const Duration(seconds: 18),
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    // Mascotte en filigrane, derrière l'anneau de progression.
+                    _mascot(reduce),
+                    AnimatedBuilder(
+                      animation: _progress,
+                      builder: (BuildContext context, Widget? _) {
+                        // Abonné : on plafonne à 97 % jusqu'au vrai résultat.
+                        // Aperçu : on laisse filer jusqu'à 100 %.
+                        final double cap = _subscribed ? 0.97 : 1.0;
+                        final double p =
+                            Curves.easeOut.transform(_progress.value) * cap;
+                        return ProgressRingHolo(
+                          progress: p,
+                          size: 210,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text('${(p * 100).round()}',
+                                  style: MorfoType.displayLarge),
+                              Text('%', style: MorfoType.caption),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                Gap.h32,
+                AnimatedSwitcher(
+                  duration: Motion.base,
+                  child: Text(
+                    widget.args.template.isVideo
+                        ? S.genVideo
+                        : S.genSteps[_step],
+                    key: ValueKey<int>(
+                        widget.args.template.isVideo ? -1 : _step),
+                    style: MorfoType.titleSmall,
                   ),
-                );
-              },
+                ),
+                Gap.h8,
+                Text(
+                  widget.args.template.isVideo
+                      ? S.genWaitVideo
+                      : S.genWaitImage,
+                  style: MorfoType.caption,
+                ),
+                Gap.h32,
+                TextButton(
+                  onPressed: _cancel,
+                  child: Text(S.cancel, style: MorfoType.label),
+                ),
+              ],
             ),
-            Gap.h32,
-            AnimatedSwitcher(
-              duration: Motion.base,
-              child: Text(
-                widget.args.template.isVideo ? S.genVideo : S.genSteps[_step],
-                key: ValueKey<int>(widget.args.template.isVideo ? -1 : _step),
-                style: MorfoType.titleSmall,
-              ),
-            ),
-            Gap.h8,
-            Text(
-              widget.args.template.isVideo ? S.genWaitVideo : S.genWaitImage,
-              style: MorfoType.caption,
-            ),
-            Gap.h32,
-            TextButton(
-              onPressed: _cancel,
-              child: Text(S.cancel, style: MorfoType.label),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  /// Mascotte en filigrane derrière l'anneau, posée sur un halo qui respire.
+  Widget _mascot(bool reduce) {
+    const double halo = 250;
+
+    final Widget stack = SizedBox(
+      width: halo,
+      height: halo,
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: <Color>[
+                  MorfoColors.holoViolet.withValues(alpha: 0.26),
+                  MorfoColors.holoCyan.withValues(alpha: 0.08),
+                  Colors.transparent,
+                ],
+                stops: const <double>[0.0, 0.55, 1.0],
+              ),
+            ),
+            child: const SizedBox(width: halo, height: halo),
+          ),
+          // Discrète : l'anneau et le pourcentage restent l'information
+          // principale, la mascotte n'est qu'une signature de marque.
+          Opacity(
+            opacity: 0.22,
+            child: ShaderMask(
+              blendMode: BlendMode.dstIn,
+              shaderCallback: (Rect r) => const RadialGradient(
+                colors: <Color>[
+                  Colors.white,
+                  Colors.white,
+                  Colors.transparent,
+                ],
+                stops: <double>[0.0, 0.55, 0.80],
+              ).createShader(r),
+              child: Image.asset(
+                'assets/images/mascot.png',
+                width: 168,
+                height: 168,
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
+                    const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (reduce) return stack;
+
+    return stack
+        .animate(onPlay: (AnimationController c) => c.repeat(reverse: true))
+        .scale(
+          begin: const Offset(0.94, 0.94),
+          end: const Offset(1.06, 1.06),
+          duration: 2600.ms,
+          curve: Curves.easeInOut,
+        );
   }
 
   Widget _errorView(GenError state) {

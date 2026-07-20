@@ -7,6 +7,7 @@ import '../core/app_exception.dart';
 import '../core/models/generation_result.dart';
 import '../core/models/template.dart';
 import 'generation_service.dart';
+import '../core/strings.dart';
 
 /// Implémentation réelle contre le backend (contrat §5).
 ///
@@ -26,7 +27,7 @@ class ApiGenerationService implements GenerationService {
           .map((dynamic e) => Template.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      throw AppException('Impossible de charger les styles.', cause: e);
+      throw AppException(S.loadStylesError, cause: e);
     }
   }
 
@@ -102,7 +103,7 @@ class ApiGenerationService implements GenerationService {
       );
       return VideoStatus.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
-      throw AppException('Le suivi de la vidéo a été interrompu.', cause: e);
+      throw AppException(S.videoTrackingLost, cause: e);
     }
   }
 

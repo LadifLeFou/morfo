@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../morfo_colors.dart';
 import '../morfo_typography.dart';
+import '../../core/strings.dart';
 
 /// Aperçu animé « avant → après » d'un style : une poignée balaie l'image en
 /// boucle pour révéler la transformation, avec des labels AVANT / APRÈS clairs.
@@ -110,8 +111,8 @@ class _StylePreviewState extends State<StylePreview>
                       ),
                     ),
                     if (widget.showTags) ...<Widget>[
-                      Positioned(left: 8, top: 8, child: _tag('AVANT')),
-                      Positioned(right: 8, top: 8, child: _tag('APRÈS')),
+                      Positioned(left: 8, top: 8, child: _tag(S.before)),
+                      Positioned(right: 8, top: 8, child: _tag(S.after)),
                     ],
                   ],
                 );

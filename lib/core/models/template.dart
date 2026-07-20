@@ -1,4 +1,5 @@
 import 'morfo_category.dart';
+import '../strings.dart';
 
 /// Nature d'un template : image fixe ou courte vidéo.
 enum TemplateKind {
@@ -34,6 +35,13 @@ class Template {
 
   /// Template « héros » mis en tête de la home (la transfo la plus caractéristique).
   final bool hero;
+
+  /// Titre affiché — retraduit depuis [id] quand la langue n'est pas le
+  /// français, le backend ne servant que du français. Voir `S.templateTitle`.
+  String get displayTitle => S.templateTitle(id, title);
+
+  /// Description affichée, même principe que [displayTitle].
+  String get displayDescription => S.templateDescription(id, description);
 
   bool get isVideo => kind == TemplateKind.video;
   bool get hasThumbnail => thumbnailUrl.isNotEmpty;

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,18 +9,14 @@ import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
 import '../../generation/generate_args.dart';
 import '../../notifications/conversion_notifications.dart';
+import '../../../core/models/template.dart';
+import '../../../core/strings.dart';
+import '../../home/template_icon.dart';
 
 final FutureProvider<List<SubscriptionOffer>> _offersProvider =
     FutureProvider<List<SubscriptionOffer>>(
   (Ref ref) => ref.read(purchasesServiceProvider).offers(),
 );
-
-const List<String> _benefits = <String>[
-  '650 crédits rechargés chaque semaine',
-  'Tous les styles, sans filigrane',
-  'Photos et vidéos par IA',
-  'Rendus en haute résolution',
-];
 
 /// Paywall natif de secours — Superwall prioritaire côté mobile (voir README).
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -73,7 +71,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
       _onUnlocked();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aucun achat à restaurer.')),
+        SnackBar(content: Text(S.noPurchasesToRestore)),
       );
     }
   }
@@ -82,6 +80,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Widget build(BuildContext context) {
     final AsyncValue<List<SubscriptionOffer>> offers =
         ref.watch(_offersProvider);
+    // Non nul quand l'utilisateur arrive depuis une génération interrompue.
+    final GenerateArgs? resume = widget.resumeArgs;
 
     return MorfoScaffold(
       body: Stack(
@@ -90,22 +90,27 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.sm, Gap.xl, Gap.xl),
             children: <Widget>[
               const SizedBox(height: 40),
-              const AspectRatio(
-                aspectRatio: 5 / 4,
-                child: HoloCard(
-                  eyebrow: 'Portrait vivant',
-                  title: '650 crédits / semaine',
-                  child: StylePreview(
-                    beforeAsset: 'assets/images/preview_renaissance_before.jpg',
-                    afterAsset: 'assets/images/preview_renaissance_after.jpg',
-                    borderRadius: BorderRadius.zero,
+              // L'utilisateur arrivé ici depuis une génération voit le style
+              // qu'il visait, flouté, plutôt qu'une vitrine générique.
+              if (resume != null)
+                _LockedPreview(template: resume.template)
+              else
+                AspectRatio(
+                  aspectRatio: 5 / 4,
+                  child: HoloCard(
+                    eyebrow: S.livePortrait,
+                    title: S.creditsPerWeek,
+                    child: const StylePreview(
+                      beforeAsset: 'assets/images/preview_renaissance_before.jpg',
+                      afterAsset: 'assets/images/preview_renaissance_after.jpg',
+                      borderRadius: BorderRadius.zero,
+                    ),
                   ),
                 ),
-              ),
               Gap.h24,
-              Text('Débloque tout Morfo', style: MorfoType.displayMedium),
+              Text(S.unlockAll, style: MorfoType.displayMedium),
               Gap.h16,
-              for (final String b in _benefits) _BenefitRow(text: b),
+              for (final String b in S.paywallPerks) _BenefitRow(text: b),
               Gap.h24,
               offers.when(
                 data: (List<SubscriptionOffer> list) => Column(
@@ -123,7 +128,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 ),
                 loading: () => const _OffersSkeleton(),
                 error: (Object e, StackTrace _) => Text(
-                  'Offres indisponibles pour le moment.',
+                  S.offersUnavailable,
                   style: MorfoType.bodyMedium,
                 ),
               ),
@@ -147,7 +152,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               Center(
                 child: TextButton(
                   onPressed: _restore,
-                  child: Text('Restaurer les achats', style: MorfoType.label),
+                  child: Text(S.restore, style: MorfoType.label),
                 ),
               ),
               const _LegalRow(),
@@ -184,9 +189,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   String _ctaLabel(AsyncValue<List<SubscriptionOffer>> offers) {
     final SubscriptionOffer? o = _currentOffer(offers);
     if (o != null && o.hasTrial) {
-      return 'Commencer mes ${o.trialDays} jours gratuits';
+      return S.startTrial(o.trialDays);
     }
-    return 'Continuer';
+    return S.continueLabel;
   }
 }
 
@@ -198,10 +203,69 @@ class _TrialLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'Gratuit pendant ${offer.trialDays} jours, puis ${offer.price}. '
-      'Annule quand tu veux, sans frais.',
+      S.trialTerms(offer.trialDays, offer.price),
       textAlign: TextAlign.center,
       style: MorfoType.caption.copyWith(color: MorfoColors.ink),
+    );
+  }
+}
+
+
+/// Aperçu verrouillé — montré quand l'utilisateur non abonné vient de lancer
+/// une génération. On floute l'exemple du style visé et on annonce clairement
+/// qu'il faut s'abonner : rien n'a été généré, on ne prétend pas le contraire.
+class _LockedPreview extends StatelessWidget {
+  const _LockedPreview({required this.template});
+
+  final Template template;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 5 / 4,
+      child: HoloCard(
+        eyebrow: S.lockedPreview,
+        title: template.displayTitle,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Image.asset(
+                afterPreview(template.id),
+                fit: BoxFit.cover,
+                errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
+                    HoloPlaceholder(seed: template.id),
+              ),
+            ),
+            // Voile sombre : garde le cadenas et le texte lisibles quelle que
+            // soit la luminosité de l'aperçu.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: MorfoColors.voidColor.withValues(alpha: 0.42),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(Icons.lock_outline,
+                        size: 40, color: MorfoColors.ink),
+                    Gap.h12,
+                    Text(
+                      S.unlockYourResult,
+                      textAlign: TextAlign.center,
+                      style: MorfoType.titleSmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -282,7 +346,7 @@ class _OfferCard extends StatelessWidget {
                     ],
                   ),
                   if (offer.hasTrial)
-                    Text('${offer.trialDays} jours gratuits, puis ${offer.price}',
+                    Text(S.trialThenPrice(offer.trialDays, offer.price),
                         style: MorfoType.caption)
                   else if (offer.subtitle.isNotEmpty)
                     Text(offer.subtitle, style: MorfoType.caption),
@@ -341,7 +405,7 @@ class _TrialBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(Radii.pill),
       ),
       child: Text(
-        '$days JOURS GRATUITS',
+        S.freeDaysBadge(days),
         style: MorfoType.eyebrow.copyWith(
           color: MorfoColors.voidColor,
           fontSize: 10,
@@ -364,7 +428,7 @@ class _PopularBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(Radii.pill),
       ),
       child: Text(
-        'POPULAIRE',
+        S.popular,
         style: MorfoType.eyebrow.copyWith(
           color: MorfoColors.voidColor,
           fontSize: 10,
@@ -398,10 +462,7 @@ class _SubscriptionDisclosure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'Abonnement à renouvellement automatique. Le paiement est prélevé sur '
-      'ton compte Apple à la confirmation. Il se renouvelle sauf annulation au '
-      'moins 24 h avant la fin de la période ; gère-le à tout moment dans les '
-      'Réglages de ton compte App Store.',
+      S.autoRenewNotice,
       textAlign: TextAlign.center,
       style: MorfoType.caption,
     );
@@ -420,12 +481,12 @@ class _LegalRow extends StatelessWidget {
         children: <Widget>[
           TextButton(
             onPressed: () => context.push('/terms'),
-            child: Text('Conditions', style: MorfoType.caption),
+            child: Text(S.terms, style: MorfoType.caption),
           ),
           Text('·', style: MorfoType.caption),
           TextButton(
             onPressed: () => context.push('/privacy'),
-            child: Text('Confidentialité', style: MorfoType.caption),
+            child: Text(S.privacy, style: MorfoType.caption),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import '../../../app/app_state.dart';
 import '../../../core/haptics.dart';
 import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
+import '../../../core/strings.dart';
 
 final FutureProvider<List<CreditPack>> _creditPacksProvider =
     FutureProvider<List<CreditPack>>(
@@ -25,7 +26,7 @@ class CreditsScreen extends ConsumerWidget {
       Haptics.success();
       credits.add(pack.credits);
       messenger.showSnackBar(
-        SnackBar(content: Text('${pack.credits} crédits ajoutés.')),
+        SnackBar(content: Text(S.creditsAdded(pack.credits))),
       );
     }
   }
@@ -40,16 +41,16 @@ class CreditsScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-          tooltip: 'Retour',
+          tooltip: S.back,
         ),
-        title: const Text('Crédits'),
+        title: Text(S.credits),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.sm, Gap.xl, Gap.giant),
         children: <Widget>[
           _BalanceCard(balance: balance),
           Gap.h32,
-          Text('Recharger', style: MorfoType.titleSmall),
+          Text(S.recharge, style: MorfoType.titleSmall),
           Gap.h16,
           packs.when(
             data: (List<CreditPack> list) => Column(
@@ -72,7 +73,7 @@ class CreditsScreen extends ConsumerWidget {
               ],
             ),
             error: (Object e, StackTrace _) =>
-                Text('Packs indisponibles.', style: MorfoType.bodyMedium),
+                Text(S.packsUnavailable, style: MorfoType.bodyMedium),
           ),
           Gap.h16,
           Text(
@@ -107,7 +108,7 @@ class _BalanceCard extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          Text('Ton solde', style: MorfoType.eyebrow),
+          Text(S.yourBalance, style: MorfoType.eyebrow),
           Gap.h12,
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -119,7 +120,7 @@ class _BalanceCard extends StatelessWidget {
             ],
           ),
           Gap.h4,
-          Text('crédits disponibles', style: MorfoType.caption),
+          Text(S.creditsAvailable, style: MorfoType.caption),
         ],
       ),
     );

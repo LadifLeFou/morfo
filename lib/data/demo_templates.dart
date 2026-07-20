@@ -24,6 +24,13 @@ const List<Template> demoTemplates = <Template>[
     category: MorfoCategory.tendance,
   ),
 
+  Template(
+    id: 'luxe',
+    title: 'Luxe',
+    description: 'Voitures de luxe, argent et penthouse — la vie de rêve.',
+    category: MorfoCategory.tendance,
+  ),
+
   // — Aesthetic —
   Template(
     id: 'digicam',

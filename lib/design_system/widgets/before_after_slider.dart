@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../morfo_colors.dart';
 import '../morfo_spacing.dart';
 import '../morfo_typography.dart';
+import '../../core/strings.dart';
 
 /// Comparateur avant/après avec poignée glissante.
 class BeforeAfterSlider extends StatefulWidget {
@@ -74,8 +75,8 @@ class _BeforeAfterSliderState extends State<BeforeAfterSlider> {
                     ),
                   ),
                   Positioned(left: x - 18, top: h / 2 - 18, child: const _Knob()),
-                  Positioned(left: 12, top: 12, child: _tag('AVANT')),
-                  Positioned(right: 12, top: 12, child: _tag('APRÈS')),
+                  Positioned(left: 12, top: 12, child: _tag(S.before)),
+                  Positioned(right: 12, top: 12, child: _tag(S.after)),
                 ],
               ),
             );

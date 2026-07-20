@@ -10,6 +10,8 @@ import '../../../core/models/template.dart';
 import '../../../design_system/design_system.dart';
 import '../../notifications/conversion_notifications.dart';
 import '../generate_args.dart';
+import '../../../core/strings.dart';
+import '../../../core/image_prep.dart';
 
 /// Import photo — caméra / galerie, permissions gérées, downscale avant envoi.
 class ImportScreen extends ConsumerStatefulWidget {
@@ -27,6 +29,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   XFile? _picked;
   Uint8List? _bytes;
   String? _error;
+  bool _preparing = false;
 
   /// Style « selfie avec une star » : l'utilisateur décrit la célébrité.
   bool get _isStar => widget.template.id == 'selfie_star';
@@ -43,24 +46,29 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   Future<void> _pick(ImageSource source) async {
     setState(() => _error = null);
     try {
-      // Optimisation dès la sélection : max 1024 px + JPEG q≈0.8.
-      final XFile? file = await _picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
+      // Pas de redimensionnement ici : `image_picker` ré-encode sans toujours
+      // appliquer l'EXIF. On lit l'original et on normalise nous-mêmes.
+      final XFile? file = await _picker.pickImage(source: source);
       if (file == null) return;
-      final Uint8List bytes = await file.readAsBytes();
+      // Une photo iPhone pleine résolution prend un instant à réorienter et
+      // recompresser : sans retour visuel, l'écran semble figé.
+      if (!mounted) return;
+      setState(() => _preparing = true);
+      // Oriente les pixels + borne la taille : ce que voit le modèle est
+      // exactement ce que voit l'utilisateur.
+      final Uint8List bytes = await prepareForUpload(await file.readAsBytes());
       if (!mounted) return;
       setState(() {
+        _preparing = false;
         _picked = file;
         _bytes = bytes;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _error =
-          'Accès à la photo impossible. Vérifie les autorisations.');
+      setState(() {
+        _preparing = false;
+        _error = S.photoAccessError;
+      });
     }
   }
 
@@ -71,7 +79,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     if (ref.read(creditsProvider) < cost) {
       ref.read(conversionNotificationsProvider).onCreditsEmpty();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Crédits insuffisants.')),
+        SnackBar(content: Text(S.insufficientCredits)),
       );
       context.push('/credits');
       return;
@@ -95,9 +103,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-          tooltip: 'Retour',
+          tooltip: S.back,
         ),
-        title: const Text('Ta photo'),
+        title: Text(S.yourPhoto),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xxl, Gap.xl, Gap.xxl),
@@ -110,7 +118,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               Gap.h24,
             ],
             Expanded(
-              child: hasPhoto ? _preview() : _chooser(),
+              child: _preparing
+                  ? _preparingView()
+                  : hasPhoto
+                      ? _preview()
+                      : _chooser(),
             ),
             if (_error != null) ...<Widget>[
               Gap.h12,
@@ -120,14 +132,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             Gap.h24,
             if (hasPhoto) ...<Widget>[
               GradientButton(
-                label: 'Générer · ${widget.template.creditCost} crédit'
-                    '${widget.template.creditCost > 1 ? 's' : ''}',
+                label: S.generateFor(widget.template.creditCost),
                 icon: Icons.auto_awesome,
                 onPressed: _starReady ? _proceed : null,
               ),
               if (_isStar && !_starReady) ...<Widget>[
                 Gap.h8,
-                Text('Décris d’abord la star ci-dessus.',
+                Text(S.describeStarFirst,
                     style:
                         MorfoType.caption.copyWith(color: MorfoColors.muted)),
               ],
@@ -137,11 +148,25 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                   _picked = null;
                   _bytes = null;
                 }),
-                child: Text('Choisir une autre photo', style: MorfoType.label),
+                child: Text(S.chooseAnotherPhoto, style: MorfoType.label),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Pendant la réorientation/compression : l'écran ne doit jamais paraître figé.
+  Widget _preparingView() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const ProgressRingHolo(size: 54, strokeWidth: 4),
+          Gap.h16,
+          Text(S.preparingPhoto, style: MorfoType.caption),
+        ],
       ),
     );
   }
@@ -158,7 +183,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text('QUELLE STAR ?', style: MorfoType.eyebrow),
+        Text(S.whichStar, style: MorfoType.eyebrow),
         Gap.h8,
         TextField(
           controller: _star,
@@ -168,8 +193,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           style: MorfoType.bodyLarge,
           cursorColor: MorfoColors.holoViolet,
           decoration: InputDecoration(
-            hintText:
-                'Ex : à côté de Lionel Messi, sur le terrain, il passe le bras autour de mon épaule…',
+            hintText: S.whichStarHint,
             hintStyle: MorfoType.bodyMedium,
             filled: true,
             fillColor: MorfoColors.surface.withValues(alpha: 0.6),
@@ -186,7 +210,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         ),
         Gap.h8,
         Text(
-          'Décris uniquement la star (qui, où, la pose). Les autres demandes sont ignorées.',
+          S.whichStarHelp,
           style: MorfoType.caption.copyWith(color: MorfoColors.muted),
         ),
       ],
@@ -199,13 +223,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       children: <Widget>[
         _OptionCard(
           icon: Icons.photo_library_outlined,
-          label: 'Depuis la galerie',
+          label: S.fromGallery,
           onTap: () => _pick(ImageSource.gallery),
         ),
         Gap.h16,
         _OptionCard(
           icon: Icons.photo_camera_outlined,
-          label: 'Prendre une photo',
+          label: S.takePhoto,
           onTap: () => _pick(ImageSource.camera),
         ),
       ],
@@ -242,9 +266,9 @@ class _StyleHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Style choisi', style: MorfoType.eyebrow),
+              Text(S.chosenStyle, style: MorfoType.eyebrow),
               const SizedBox(height: 2),
-              Text(template.title, style: MorfoType.titleSmall),
+              Text(template.displayTitle, style: MorfoType.titleSmall),
             ],
           ),
         ),

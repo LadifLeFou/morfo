@@ -37,6 +37,11 @@ dependencies:
   cached_network_image: ^3.4.1
   share_plus: ^13.2.0
   permission_handler: ^12.0.3
+  # Sauvegarde réelle dans la photothèque (iOS/Android ; no-op sur web).
+  gal: ^2.3.1
+  # Normalisation EXIF avant envoi : les modèles d'IA lisent les pixels bruts
+  # et ignorent la balise d'orientation, d'où des rendus pivotés.
+  image: ^4.5.4
 
   # Signature holographique (gyroscope)
   sensors_plus: ^7.1.0

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/env.dart';
 import 'purchases_service_factory.dart';
+import '../core/strings.dart';
 
 /// Périodicité d'un abonnement.
 enum OfferPeriod { weekly, annual }
@@ -81,12 +82,12 @@ class DemoPurchasesService implements PurchasesService {
   Future<bool> isSubscribed() async => _subscribed;
 
   @override
-  Future<List<SubscriptionOffer>> offers() async => const <SubscriptionOffer>[
+  Future<List<SubscriptionOffer>> offers() async => <SubscriptionOffer>[
         SubscriptionOffer(
           id: 'weekly',
-          title: 'Hebdomadaire',
-          price: '3,99 €',
-          subtitle: '650 crédits / semaine',
+          title: S.planWeekly,
+          price: S.priceWeekly,
+          subtitle: S.creditsPerWeek,
           period: OfferPeriod.weekly,
           // Essai gratuit = principal levier de conversion.
           highlighted: true,
@@ -94,30 +95,33 @@ class DemoPurchasesService implements PurchasesService {
         ),
         SubscriptionOffer(
           id: 'annual',
-          title: 'Annuel',
-          price: '99,99 €',
-          subtitle: 'soit 1,92 €/semaine — économise 52 %',
+          title: S.planYearly,
+          price: S.priceAnnual,
+          subtitle: S.planYearlySub,
           period: OfferPeriod.annual,
           trialDays: 3,
         ),
       ];
 
   @override
-  Future<List<CreditPack>> creditPacks() async => const <CreditPack>[
+  Future<List<CreditPack>> creditPacks() async => <CreditPack>[
         CreditPack(
-            id: 'pack_100', title: '100 crédits', credits: 100, price: '2,99 €'),
+            id: 'pack_100',
+            title: S.creditsPack(100),
+            credits: 100,
+            price: S.pricePack100),
         CreditPack(
           id: 'pack_300',
-          title: '300 crédits',
+          title: S.creditsPack(300),
           credits: 300,
-          price: '6,99 €',
+          price: S.pricePack300,
           bestValue: true,
         ),
         CreditPack(
             id: 'pack_1000',
-            title: '1000 crédits',
+            title: S.creditsPack(1000),
             credits: 1000,
-            price: '19,99 €'),
+            price: S.pricePack1000),
       ];
 
   @override

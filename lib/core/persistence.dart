@@ -18,9 +18,14 @@ class Prefs {
   static const String _kCredits = 'morfo_credits';
   static const String _kHistory = 'morfo_history';
   static const String _kFavorites = 'morfo_favorites';
+  static const String _kLanguage = 'morfo_language';
 
   bool get onboarded => _sp.getBool(_kOnboarded) ?? false;
   Future<void> setOnboarded(bool value) => _sp.setBool(_kOnboarded, value);
+
+  /// Code de langue choisi (`system` / `fr` / `en`) ; null = jamais choisi.
+  String? get language => _sp.getString(_kLanguage);
+  Future<void> setLanguage(String code) => _sp.setString(_kLanguage, code);
 
   List<String> get favorites => _sp.getStringList(_kFavorites) ?? <String>[];
   Future<void> setFavorites(List<String> ids) =>
