@@ -53,11 +53,12 @@ dependencies:
   # Config (.env — jamais de secret de modèle IA côté app)
   flutter_dotenv: ^6.0.1
   video_player: ^2.13.0
+  purchases_flutter: ^10.4.2
 
-  # NOTE MONÉTISATION : purchases_flutter (RevenueCat) et superwallkit_flutter
-  # (Superwall) sont des SDK iOS/Android uniquement et cassent le build web.
-  # Ils seront ajoutés sur le build mobile via une implémentation conditionnelle
-  # (voir services/purchases_service.dart et README §Monétisation).
+  # NOTE MONÉTISATION : purchases_flutter est mobile-only. Le build web reste
+  # vert grâce aux imports conditionnels (purchases_service_stub.dart) — le SDK
+  # n'est jamais compilé pour le web. Vérifié : `flutter build web` passe.
+  # Superwall (superwallkit_flutter) reste à brancher de la même façon.
 
 dev_dependencies:
   flutter_test:

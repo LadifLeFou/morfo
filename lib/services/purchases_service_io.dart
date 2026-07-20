@@ -1,4 +1,5 @@
 import 'purchases_service.dart';
+import 'purchases_service_revenuecat.dart';
 
 /// Mobile (iOS / Android) — point de branchement **RevenueCat**.
 ///
@@ -14,5 +15,8 @@ import 'purchases_service.dart';
 ///    return RevenueCatPurchasesService(revenueCatApiKey);
 ///    ```
 PurchasesService createPurchasesService(String revenueCatApiKey) {
-  return DemoPurchasesService();
+  // Sans clé (dev, TestFlight interne, capture d'écran), on garde la démo :
+  // l'app reste utilisable de bout en bout sans compte RevenueCat.
+  if (revenueCatApiKey.isEmpty) return DemoPurchasesService();
+  return RevenueCatPurchasesService(revenueCatApiKey);
 }

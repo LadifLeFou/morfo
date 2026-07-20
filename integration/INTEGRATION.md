@@ -30,6 +30,17 @@ services/
 
 ## 1. RevenueCat (achats / abonnements)
 
+> ✅ **Étapes 1 à 4 déjà faites.** `purchases_flutter ^10.4.2` est dans
+> `pubspec.yaml`, `lib/services/purchases_service_revenuecat.dart` existe et
+> compile (API 10.x : `purchasePackage` → `purchase(PurchaseParams.package(…))`),
+> et `purchases_service_io.dart` bascule automatiquement dessus dès que
+> `REVENUECAT_PUBLIC_SDK_KEY` est renseignée. Sans clé → démo.
+> Builds vérifiés : iOS ✅ et web ✅.
+>
+> **Il ne reste que l'étape 5** (configuration RevenueCat + App Store Connect).
+
+<details><summary>Étapes historiques (déjà appliquées)</summary>
+
 1. Ajouter la dépendance (sur une machine avec le toolchain mobile) :
    ```bash
    flutter pub add purchases_flutter
@@ -51,6 +62,9 @@ services/
    }
    ```
 4. Renseigner `.env` : `REVENUECAT_PUBLIC_SDK_KEY=appl_xxx`.
+
+</details>
+
 5. Côté **RevenueCat + App Store Connect** :
    - Entitlement `pro` (adapter `_entitlementId` si besoin).
    - Offering `current` avec les packages abonnement (hebdo/annuel).
