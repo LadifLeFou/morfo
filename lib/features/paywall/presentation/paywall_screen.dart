@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +9,9 @@ import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
 import '../../generation/generate_args.dart';
 import '../../notifications/conversion_notifications.dart';
+import '../../../core/models/template.dart';
 import '../../../core/strings.dart';
+import '../../home/template_icon.dart';
 
 final FutureProvider<List<SubscriptionOffer>> _offersProvider =
     FutureProvider<List<SubscriptionOffer>>(
@@ -76,6 +80,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   Widget build(BuildContext context) {
     final AsyncValue<List<SubscriptionOffer>> offers =
         ref.watch(_offersProvider);
+    // Non nul quand l'utilisateur arrive depuis une génération interrompue.
+    final GenerateArgs? resume = widget.resumeArgs;
 
     return MorfoScaffold(
       body: Stack(
@@ -84,18 +90,23 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
             padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.sm, Gap.xl, Gap.xl),
             children: <Widget>[
               const SizedBox(height: 40),
-              AspectRatio(
-                aspectRatio: 5 / 4,
-                child: HoloCard(
-                  eyebrow: S.livePortrait,
-                  title: S.creditsPerWeek,
-                  child: const StylePreview(
-                    beforeAsset: 'assets/images/preview_renaissance_before.jpg',
-                    afterAsset: 'assets/images/preview_renaissance_after.jpg',
-                    borderRadius: BorderRadius.zero,
+              // L'utilisateur arrivé ici depuis une génération voit le style
+              // qu'il visait, flouté, plutôt qu'une vitrine générique.
+              if (resume != null)
+                _LockedPreview(template: resume.template)
+              else
+                AspectRatio(
+                  aspectRatio: 5 / 4,
+                  child: HoloCard(
+                    eyebrow: S.livePortrait,
+                    title: S.creditsPerWeek,
+                    child: const StylePreview(
+                      beforeAsset: 'assets/images/preview_renaissance_before.jpg',
+                      afterAsset: 'assets/images/preview_renaissance_after.jpg',
+                      borderRadius: BorderRadius.zero,
+                    ),
                   ),
                 ),
-              ),
               Gap.h24,
               Text(S.unlockAll, style: MorfoType.displayMedium),
               Gap.h16,
@@ -195,6 +206,66 @@ class _TrialLine extends StatelessWidget {
       S.trialTerms(offer.trialDays, offer.price),
       textAlign: TextAlign.center,
       style: MorfoType.caption.copyWith(color: MorfoColors.ink),
+    );
+  }
+}
+
+
+/// Aperçu verrouillé — montré quand l'utilisateur non abonné vient de lancer
+/// une génération. On floute l'exemple du style visé et on annonce clairement
+/// qu'il faut s'abonner : rien n'a été généré, on ne prétend pas le contraire.
+class _LockedPreview extends StatelessWidget {
+  const _LockedPreview({required this.template});
+
+  final Template template;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 5 / 4,
+      child: HoloCard(
+        eyebrow: S.lockedPreview,
+        title: template.displayTitle,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Image.asset(
+                afterPreview(template.id),
+                fit: BoxFit.cover,
+                errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
+                    HoloPlaceholder(seed: template.id),
+              ),
+            ),
+            // Voile sombre : garde le cadenas et le texte lisibles quelle que
+            // soit la luminosité de l'aperçu.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: MorfoColors.voidColor.withValues(alpha: 0.42),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(Icons.lock_outline,
+                        size: 40, color: MorfoColors.ink),
+                    Gap.h12,
+                    Text(
+                      S.unlockYourResult,
+                      textAlign: TextAlign.center,
+                      style: MorfoType.titleSmall,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

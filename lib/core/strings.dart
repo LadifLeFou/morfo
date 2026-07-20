@@ -338,6 +338,12 @@ class S {
         ];
 
   // — Paywall (suite) —
+  static String get lockedPreview =>
+      _('APERÇU VERROUILLÉ', 'LOCKED PREVIEW');
+  static String get unlockYourResult => _(
+        'Abonne-toi pour révéler ton résultat',
+        'Subscribe to reveal your result',
+      );
   static String get livePortrait => _('Portrait vivant', 'Live portrait');
   static String get offersUnavailable => _(
         'Offres indisponibles pour le moment.',
