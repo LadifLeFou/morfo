@@ -115,6 +115,10 @@ class S {
   static String get genVideo => _('Création de ta vidéo…', 'Creating your video…');
   static String get genWaitImage => _('Cela prend quelques secondes', 'This takes a few seconds');
   static String get genWaitVideo => _('La vidéo prend 1 à 2 minutes', 'Video takes 1 to 2 minutes');
+  static String get contentBlocked => _(
+        'Cette demande a été bloquée par le filtre de sécurité. Reformule ta demande ou essaie une autre photo.',
+        'This request was blocked by the safety filter. Rephrase it or try another photo.',
+      );
   static String get noFace => _('Aucun visage détecté. Utilise une photo de face, nette et bien éclairée.', 'No face detected. Use a clear, well-lit, front-facing photo.');
 
   // — Résultat —

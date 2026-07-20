@@ -121,18 +121,31 @@ class ApiGenerationService implements GenerationService {
     }
   }
 
+  /// Traduit une erreur backend en message affichable.
+  ///
+  /// On se fie au **code** (`error`) plutôt qu'au champ `message` : le serveur
+  /// ne parle que français, alors que l'app est bilingue. Le message serveur
+  /// ne sert que de repli pour un code encore inconnu de cette version.
   AppException _mapError(DioException e) {
     final dynamic data = e.response?.data;
+    final String? code =
+        data is Map && data['error'] is String ? data['error'] as String : null;
     final String? message = data is Map && data['message'] is String
         ? data['message'] as String
         : null;
+
     if (e.response?.statusCode == 402) {
-      return AppException(
-        message ?? 'Crédits insuffisants.',
-        insufficientCredits: true,
-      );
+      return AppException(S.insufficientCredits, insufficientCredits: true);
     }
-    return AppException(message ?? 'La génération a échoué. Réessaie.', cause: e);
+    return AppException(
+      switch (code) {
+        'no_face' => S.noFace,
+        'content_blocked' => S.contentBlocked,
+        'generation_failed' => S.genFailed,
+        _ => message ?? S.genFailed,
+      },
+      cause: e,
+    );
   }
 
   String _newId() => '${DateTime.now().microsecondsSinceEpoch}';
