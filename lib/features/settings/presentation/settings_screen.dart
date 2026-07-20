@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app_state.dart';
+import '../../../core/strings.dart';
 import '../../../design_system/design_system.dart';
 import '../../../services/purchases_service.dart';
 
@@ -17,8 +18,48 @@ class SettingsScreen extends ConsumerWidget {
     if (ok) sub.setSubscribed(true);
     messenger.showSnackBar(
       SnackBar(
-        content: Text(ok ? 'Achats restaurés.' : 'Aucun achat à restaurer.'),
+        content: Text(ok ? S.purchasesRestored : S.noPurchasesToRestore),
       ),
+    );
+  }
+
+  /// Feuille de choix de la langue. La sélection s'applique immédiatement :
+  /// `languageProvider` reconstruit tout l'arbre.
+  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) async {
+    final AppLanguage current = ref.read(languageProvider);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: MorfoColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.xl, Gap.xl, Gap.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(S.chooseLanguage.toUpperCase(), style: MorfoType.eyebrow),
+                Gap.h16,
+                for (final AppLanguage language in AppLanguage.values)
+                  _SettingTile(
+                    icon: language == current
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    title: language.label,
+                    onTap: () {
+                      ref.read(languageProvider.notifier).select(language);
+                      Navigator.of(sheetContext).pop();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -31,58 +72,60 @@ class SettingsScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-          tooltip: 'Retour',
+          tooltip: S.back,
         ),
-        title: const Text('Réglages'),
+        title: Text(S.settings),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.sm, Gap.xl, Gap.giant),
         children: <Widget>[
-          const _SectionHeader('Abonnement'),
+          _SectionHeader(S.subscription),
           if (subscribed)
-            const _SettingTile(
+            _SettingTile(
               icon: Icons.verified_outlined,
-              title: 'Abonnement actif',
-              subtitle: 'Merci de soutenir Morfo.',
+              title: S.subActive,
+              subtitle: S.thanksSupport,
             )
           else
             _SettingTile(
               icon: Icons.auto_awesome,
-              title: 'S’abonner',
-              subtitle: '3,99 €/sem · 650 crédits chaque semaine.',
+              title: S.subscribe,
+              subtitle: S.subPitch,
               onTap: () => context.push('/paywall'),
             ),
           _SettingTile(
             icon: Icons.restore,
-            title: 'Restaurer les achats',
+            title: S.restore,
             onTap: () => _restore(ref, context),
           ),
           Gap.h24,
-          const _SectionHeader('Préférences'),
-          const _SettingTile(
+          _SectionHeader(S.preferences),
+          _SettingTile(
             icon: Icons.language,
-            title: 'Langue',
-            trailing: Text('Français', style: MorfoType.label),
+            title: S.language,
+            trailing: Text(ref.watch(languageProvider).label,
+                style: MorfoType.label),
+            onTap: () => _pickLanguage(context, ref),
           ),
           Gap.h24,
-          const _SectionHeader('À propos'),
+          _SectionHeader(S.about),
           _SettingTile(
             icon: Icons.description_outlined,
-            title: 'Conditions d’utilisation',
+            title: S.termsOfUse,
             onTap: () => context.push('/terms'),
           ),
           _SettingTile(
             icon: Icons.shield_outlined,
-            title: 'Confidentialité',
+            title: S.privacy,
             onTap: () => context.push('/privacy'),
           ),
           _SettingTile(
             icon: Icons.mail_outline,
-            title: 'Contact',
+            title: S.contact,
             subtitle: 'support@morfo.app',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Écris-nous à support@morfo.app'),
+              SnackBar(
+                content: Text(S.contactUs('support@morfo.app')),
               ),
             ),
           ),

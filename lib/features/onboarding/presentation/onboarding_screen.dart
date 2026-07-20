@@ -59,7 +59,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: S.onbBody3,
       visual: HoloCard(
         aspectRatio: 1,
-        eyebrow: 'Épique',
+        eyebrow: S.epic,
         title: 'Morfo',
         interactive: true,
         child: Image.asset(_after('blockbuster'), fit: BoxFit.cover),
@@ -215,8 +215,8 @@ class _StylesPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // De vrais résultats « après » — donne envie dès l'onboarding.
-    const List<(String, String)> items = <(String, String)>[
-      ('selfie_star', 'Célébrité'),
+    final List<(String, String)> items = <(String, String)>[
+      ('selfie_star', S.celebrity),
       ('golden_hour', 'Golden hour'),
       ('old_money', 'Old money'),
       ('digicam', 'Digicam'),

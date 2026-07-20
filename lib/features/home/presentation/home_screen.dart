@@ -165,12 +165,12 @@ class _TopBar extends StatelessWidget {
           IconButton(
             onPressed: () => context.push('/history'),
             icon: const Icon(Icons.history, color: MorfoColors.ink),
-            tooltip: 'Historique',
+            tooltip: S.history,
           ),
           IconButton(
             onPressed: () => context.push('/settings'),
             icon: const Icon(Icons.settings_outlined, color: MorfoColors.ink),
-            tooltip: 'Réglages',
+            tooltip: S.settings,
           ),
         ],
       ),
@@ -279,7 +279,7 @@ class _SearchFieldState extends State<_SearchField> {
             ? IconButton(
                 icon: const Icon(Icons.close, size: 20, color: MorfoColors.muted),
                 onPressed: _clear,
-                tooltip: 'Effacer',
+                tooltip: S.clear,
               )
             : null,
         filled: true,
@@ -319,7 +319,7 @@ class _CategoryBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Gap.xl),
         children: <Widget>[
           CategoryChip(
-            label: 'Favoris',
+            label: S.favorites,
             selected: favoritesOnly,
             onTap: onFavoritesTap,
           ),
@@ -353,7 +353,7 @@ class _HeroTile extends StatelessWidget {
     return HoloCard(
       aspectRatio: 5 / 6,
       eyebrow: S.featured(S.category(template.category)),
-      title: template.title,
+      title: template.displayTitle,
       onTap: () => context.push('/template', extra: template),
       child: StylePreview(
         beforeAsset: beforePreview(template.id),
@@ -409,7 +409,7 @@ class _TemplateTile extends StatelessWidget {
                   Text(S.category(template.category), style: MorfoType.eyebrow),
                   const SizedBox(height: 2),
                   Text(
-                    template.title,
+                    template.displayTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: MorfoType.titleSmall,
@@ -499,7 +499,7 @@ class _EmptySliver extends StatelessWidget {
             Gap.h12,
             Text(
               favoritesEmpty
-                  ? 'Touche le cœur sur un style pour le retrouver ici.'
+                  ? S.favoritesEmptyHint
                   : S.noStyleMatch,
               style: MorfoType.bodyMedium,
               textAlign: TextAlign.center,

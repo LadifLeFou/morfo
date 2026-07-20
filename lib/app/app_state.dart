@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/models/generation_result.dart';
 import '../core/models/template.dart';
 import '../core/persistence.dart';
+import '../core/strings.dart';
 import '../services/purchases_service.dart';
 import '../services/service_providers.dart';
 
@@ -33,6 +34,29 @@ class OnboardingNotifier extends Notifier<bool> {
 
 final NotifierProvider<OnboardingNotifier, bool> onboardingProvider =
     NotifierProvider<OnboardingNotifier, bool>(OnboardingNotifier.new);
+
+// — Langue —
+/// Source de vérité de la langue. `build()` réapplique la préférence stockée
+/// avant le premier rendu ; changer l'état reconstruit l'app (voir `MorfoApp`).
+class LanguageNotifier extends Notifier<AppLanguage> {
+  @override
+  AppLanguage build() {
+    final AppLanguage language =
+        AppLanguage.fromCode(ref.read(prefsProvider).language);
+    S.apply(language);
+    return language;
+  }
+
+  void select(AppLanguage language) {
+    if (language == state) return;
+    S.apply(language);
+    state = language;
+    ref.read(prefsProvider).setLanguage(language.code);
+  }
+}
+
+final NotifierProvider<LanguageNotifier, AppLanguage> languageProvider =
+    NotifierProvider<LanguageNotifier, AppLanguage>(LanguageNotifier.new);
 
 // — Abonnement —
 class SubscriptionNotifier extends Notifier<bool> {

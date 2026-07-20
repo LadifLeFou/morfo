@@ -10,15 +10,8 @@ import '../../../core/models/morfo_category.dart';
 import '../../../core/models/template.dart';
 import '../../../design_system/design_system.dart';
 import '../generate_args.dart';
-
-const List<String> _suggestions = <String>[
-  "en astronaute dans l'espace",
-  'en personnage cyberpunk néon',
-  "portrait renaissance à l'huile",
-  'en super-héros de comics',
-  'en roi médiéval, cinématographique',
-  'style vieux film argentique',
-];
+import '../../../core/strings.dart';
+import '../../../core/image_prep.dart';
 
 /// Mode prompt libre — photo + prompt de l'utilisateur, en image ou en vidéo.
 class CustomPromptScreen extends ConsumerStatefulWidget {
@@ -45,14 +38,13 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
   Future<void> _pick(ImageSource source) async {
     setState(() => _error = null);
     try {
-      final XFile? file = await _picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
+      // Pas de redimensionnement ici : `image_picker` ré-encode sans toujours
+      // appliquer l'EXIF. On lit l'original et on normalise nous-mêmes.
+      final XFile? file = await _picker.pickImage(source: source);
       if (file == null) return;
-      final Uint8List bytes = await file.readAsBytes();
+      // Oriente les pixels + borne la taille : ce que voit le modèle est
+      // exactement ce que voit l'utilisateur.
+      final Uint8List bytes = await prepareForUpload(await file.readAsBytes());
       if (!mounted) return;
       setState(() {
         _picked = file;
@@ -60,7 +52,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
       });
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Accès à la photo impossible.');
+        setState(() => _error = S.photoAccessErrorShort);
       }
     }
   }
@@ -72,7 +64,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
 
     final Template template = Template(
       id: 'custom',
-      title: _isVideo ? 'Vidéo' : 'Prompt libre',
+      title: _isVideo ? S.video : S.customPrompt,
       category: MorfoCategory.fun,
       kind: _isVideo ? TemplateKind.video : TemplateKind.image,
       // Prompt libre : plus cher que les styles de base (vidéo la plus chère).
@@ -81,7 +73,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
 
     if (ref.read(creditsProvider) < template.creditCost) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Crédits insuffisants.')),
+        SnackBar(content: Text(S.insufficientCredits)),
       );
       context.push('/credits');
       return;
@@ -106,13 +98,13 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Prompt libre'),
+        title: Text(S.customPrompt),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.lg, Gap.xl, Gap.giant),
         children: <Widget>[
           Text(
-            'Importe ta photo, choisis Photo ou Vidéo, et décris ce que tu veux.',
+            S.freePromptIntro,
             style: MorfoType.bodyMedium,
           ),
           Gap.h16,
@@ -120,12 +112,12 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           Row(
             children: <Widget>[
               Expanded(
-                child: _modeChip('Photo', Icons.photo_outlined, !_isVideo,
+                child: _modeChip(S.photo, Icons.photo_outlined, !_isVideo,
                     () => setState(() => _isVideo = false)),
               ),
               Gap.w8,
               Expanded(
-                child: _modeChip('Vidéo', Icons.videocam_outlined, _isVideo,
+                child: _modeChip(S.video, Icons.videocam_outlined, _isVideo,
                     () => setState(() => _isVideo = true)),
               ),
             ],
@@ -140,9 +132,8 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
             style: MorfoType.bodyLarge,
             cursorColor: MorfoColors.holoViolet,
             decoration: InputDecoration(
-              hintText: _isVideo
-                  ? 'Ex : il sourit et fait un clin d\'œil, la caméra zoome…'
-                  : "Ex : en astronaute dans l'espace, cinématographique…",
+              hintText:
+                  _isVideo ? S.freePromptHintVideo : S.freePromptHintImage,
               hintStyle: MorfoType.bodyMedium,
               filled: true,
               fillColor: MorfoColors.surface.withValues(alpha: 0.6),
@@ -159,13 +150,13 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           ),
           if (!_isVideo) ...<Widget>[
             Gap.h16,
-            Text('IDÉES', style: MorfoType.eyebrow),
+            Text(S.ideas, style: MorfoType.eyebrow),
             Gap.h12,
             Wrap(
               spacing: Gap.sm,
               runSpacing: Gap.sm,
               children: <Widget>[
-                for (final String s in _suggestions)
+                for (final String s in S.promptSuggestions)
                   Pressable(
                     onTap: () {
                       _prompt.text = s;
@@ -188,8 +179,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           ],
           if (_isVideo) ...<Widget>[
             Gap.h12,
-            Text('La vidéo dure ~5 s et prend un peu plus de temps à générer.',
-                style: MorfoType.caption),
+            Text(S.videoNote, style: MorfoType.caption),
           ],
           if (_error != null) ...<Widget>[
             Gap.h12,
@@ -199,8 +189,8 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           Gap.h24,
           GradientButton(
             label: _isVideo
-                ? 'Générer la vidéo · 350 crédits'
-                : 'Générer · 75 crédits',
+                ? S.generateVideoFor(350)
+                : S.generateFor(75),
             icon: _isVideo ? Icons.videocam : Icons.auto_awesome,
             onPressed: ready ? _generate : null,
           ),
@@ -259,16 +249,16 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
           const Icon(Icons.add_a_photo_outlined,
               size: 34, color: MorfoColors.holoViolet),
           Gap.h12,
-          Text('Importe une photo', style: MorfoType.titleSmall),
+          Text(S.importPhoto, style: MorfoType.titleSmall),
           Gap.h16,
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _miniButton(
-                  'Galerie', Icons.photo_library_outlined, ImageSource.gallery),
+                  S.galleryShort, Icons.photo_library_outlined, ImageSource.gallery),
               Gap.w12,
               _miniButton(
-                  'Caméra', Icons.photo_camera_outlined, ImageSource.camera),
+                  S.cameraShort, Icons.photo_camera_outlined, ImageSource.camera),
             ],
           ),
         ],
@@ -315,7 +305,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
             _picked = null;
             _bytes = null;
           }),
-          child: Text('Changer la photo', style: MorfoType.label),
+          child: Text(S.changePhoto, style: MorfoType.label),
         ),
       ],
     );

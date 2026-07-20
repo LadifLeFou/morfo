@@ -7,6 +7,7 @@ import '../../../core/haptics.dart';
 import '../../../core/models/generation_result.dart';
 import '../../../design_system/design_system.dart';
 import '../../home/template_icon.dart';
+import '../../../core/strings.dart';
 
 /// Historique — grille des générations passées (persistées), état vide invitant.
 class HistoryScreen extends ConsumerWidget {
@@ -18,21 +19,20 @@ class HistoryScreen extends ConsumerWidget {
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: MorfoColors.surface2,
-        title: Text('Tout effacer ?', style: MorfoType.titleSmall),
+        title: Text(S.clearAllTitle, style: MorfoType.titleSmall),
         content: Text(
-          'Toutes tes créations seront retirées de l’historique. Cette action '
-          'est définitive.',
+          S.clearAllBody,
           style: MorfoType.bodyMedium,
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler', style: MorfoType.label),
+            child: Text(S.cancel, style: MorfoType.label),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              'Tout effacer',
+              S.clearAll,
               style: MorfoType.label.copyWith(color: MorfoColors.danger),
             ),
           ),
@@ -51,14 +51,14 @@ class HistoryScreen extends ConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
-          tooltip: 'Retour',
+          tooltip: S.back,
         ),
-        title: const Text('Historique'),
+        title: Text(S.history),
         actions: <Widget>[
           if (items.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined),
-              tooltip: 'Tout effacer',
+              tooltip: S.clearAll,
               onPressed: () => _confirmClearAll(context, ref),
             ),
         ],
@@ -95,20 +95,20 @@ class _HistoryTile extends StatelessWidget {
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: MorfoColors.surface2,
-        title: Text('Supprimer cette création ?', style: MorfoType.titleSmall),
+        title: Text(S.deleteOneTitle, style: MorfoType.titleSmall),
         content: Text(
-          'Elle disparaîtra de ton historique.',
+          S.deleteOneBody,
           style: MorfoType.bodyMedium,
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler', style: MorfoType.label),
+            child: Text(S.cancel, style: MorfoType.label),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              'Supprimer',
+              S.delete,
               style: MorfoType.label.copyWith(color: MorfoColors.danger),
             ),
           ),
@@ -177,17 +177,17 @@ class _EmptyHistory extends StatelessWidget {
             const Icon(Icons.auto_awesome_outlined,
                 size: 46, color: MorfoColors.muted),
             Gap.h16,
-            Text('Tes créations apparaîtront ici',
+            Text(S.emptyHistory,
                 style: MorfoType.titleSmall, textAlign: TextAlign.center),
             Gap.h8,
             Text(
-              'Choisis un style et lance ta première métamorphose.',
+              S.emptyHistoryCta,
               style: MorfoType.bodyMedium,
               textAlign: TextAlign.center,
             ),
             Gap.h24,
             GradientButton(
-              label: 'Explorer les styles',
+              label: S.exploreStyles,
               icon: Icons.grid_view_rounded,
               expand: false,
               onPressed: onExplore,

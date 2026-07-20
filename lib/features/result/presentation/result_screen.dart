@@ -8,6 +8,7 @@ import '../../../core/haptics.dart';
 import '../../../core/models/generation_result.dart';
 import '../../../core/strings.dart';
 import '../../../design_system/design_system.dart';
+import '../../../services/gallery_saver.dart';
 import '../../home/template_icon.dart';
 import '../../notifications/conversion_notifications.dart';
 
@@ -23,6 +24,7 @@ class ResultScreen extends ConsumerStatefulWidget {
 
 class _ResultScreenState extends ConsumerState<ResultScreen> {
   bool _saved = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -47,12 +49,34 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     }
   }
 
-  void _save() {
-    if (_saved) return;
-    Haptics.success();
-    setState(() => _saved = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(S.savedToGallery)),
+  /// Enregistrement réel dans la photothèque (téléchargement puis écriture).
+  Future<void> _save() async {
+    if (_saved || _saving) return;
+    Haptics.light();
+    setState(() => _saving = true);
+
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final SaveOutcome outcome = await saveToGallery(
+      url: widget.result.outputUrl,
+      isVideo: widget.result.isVideo,
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _saving = false;
+      _saved = outcome == SaveOutcome.success;
+    });
+    if (outcome == SaveOutcome.success) Haptics.success();
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(switch (outcome) {
+          SaveOutcome.success => S.savedToGallery,
+          SaveOutcome.permissionDenied => S.savePermissionDenied,
+          SaveOutcome.unsupported => S.saveUnsupported,
+          SaveOutcome.failed => S.saveFailed,
+        }),
+      ),
     );
   }
 
@@ -66,7 +90,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.go('/home'),
-          tooltip: 'Fermer',
+          tooltip: S.close,
         ),
         title: Text(S.yourResult),
       ),
@@ -110,8 +134,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             children: <Widget>[
               Expanded(
                 child: _ActionButton(
-                  icon: _saved ? Icons.check_circle : Icons.download_outlined,
-                  label: _saved ? S.saved : S.save,
+                  icon: _saved
+                      ? Icons.check_circle
+                      : _saving
+                          ? Icons.hourglass_top
+                          : Icons.download_outlined,
+                  label: _saved
+                      ? S.saved
+                      : _saving
+                          ? S.saving
+                          : S.save,
                   highlighted: _saved,
                   onTap: _save,
                 ),

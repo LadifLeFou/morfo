@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
 
+import 'app/app_state.dart';
 import 'app/router.dart';
 import 'core/persistence.dart';
 import 'core/strings.dart';
@@ -59,7 +60,14 @@ class _MorfoAppState extends ConsumerState<MorfoApp> {
 
   @override
   Widget build(BuildContext context) {
+    // `S` expose des getters statiques : changer de langue n'invalide aucun
+    // widget en soi. On force donc la reconstruction complète de l'arbre via
+    // la clé. La route courante est préservée : `appRouter` est global et
+    // conserve sa propre location.
+    final AppLanguage language = ref.watch(languageProvider);
+
     return MaterialApp.router(
+      key: ValueKey<AppLanguage>(language),
       title: 'Morfo',
       debugShowCheckedModeBanner: false,
       theme: MorfoTheme.dark,

@@ -5,6 +5,7 @@ import '../../../app/widgets/favorite_button.dart';
 import '../../../core/models/template.dart';
 import '../../../design_system/design_system.dart';
 import '../template_icon.dart';
+import '../../../core/strings.dart';
 
 /// Détail d'un template — grand aperçu (Hero), description, coût, CTA.
 class TemplateDetailScreen extends StatelessWidget {
@@ -48,12 +49,12 @@ class TemplateDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(template.title, style: MorfoType.displayMedium),
+                    Text(template.displayTitle, style: MorfoType.displayMedium),
                     Gap.h12,
                     _CostChip(label: costLabel),
                     Gap.h24,
                     Text(
-                      template.description,
+                      template.displayDescription,
                       style: MorfoType.bodyLarge
                           .copyWith(color: MorfoColors.muted),
                     ),
@@ -70,7 +71,7 @@ class TemplateDetailScreen extends StatelessWidget {
                 children: <Widget>[
                   _CircleButton(
                     icon: Icons.arrow_back,
-                    label: 'Retour',
+                    label: S.back,
                     onTap: () => context.pop(),
                   ),
                   const Spacer(),
@@ -94,7 +95,7 @@ class TemplateDetailScreen extends StatelessWidget {
                 ),
               ),
               child: GradientButton(
-                label: 'Essayer ce style',
+                label: S.tryThisStyle,
                 icon: Icons.auto_awesome,
                 onPressed: () => context.push('/import', extra: template),
               ),
