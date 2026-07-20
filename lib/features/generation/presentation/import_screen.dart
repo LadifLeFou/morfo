@@ -29,6 +29,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   XFile? _picked;
   Uint8List? _bytes;
   String? _error;
+  bool _preparing = false;
 
   /// Style « selfie avec une star » : l'utilisateur décrit la célébrité.
   bool get _isStar => widget.template.id == 'selfie_star';
@@ -49,17 +50,25 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       // appliquer l'EXIF. On lit l'original et on normalise nous-mêmes.
       final XFile? file = await _picker.pickImage(source: source);
       if (file == null) return;
+      // Une photo iPhone pleine résolution prend un instant à réorienter et
+      // recompresser : sans retour visuel, l'écran semble figé.
+      if (!mounted) return;
+      setState(() => _preparing = true);
       // Oriente les pixels + borne la taille : ce que voit le modèle est
       // exactement ce que voit l'utilisateur.
       final Uint8List bytes = await prepareForUpload(await file.readAsBytes());
       if (!mounted) return;
       setState(() {
+        _preparing = false;
         _picked = file;
         _bytes = bytes;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _error = S.photoAccessError);
+      setState(() {
+        _preparing = false;
+        _error = S.photoAccessError;
+      });
     }
   }
 
@@ -109,7 +118,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               Gap.h24,
             ],
             Expanded(
-              child: hasPhoto ? _preview() : _chooser(),
+              child: _preparing
+                  ? _preparingView()
+                  : hasPhoto
+                      ? _preview()
+                      : _chooser(),
             ),
             if (_error != null) ...<Widget>[
               Gap.h12,
@@ -140,6 +153,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Pendant la réorientation/compression : l'écran ne doit jamais paraître figé.
+  Widget _preparingView() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const ProgressRingHolo(size: 54, strokeWidth: 4),
+          Gap.h16,
+          Text(S.preparingPhoto, style: MorfoType.caption),
+        ],
       ),
     );
   }

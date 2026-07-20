@@ -27,6 +27,7 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
   XFile? _picked;
   Uint8List? _bytes;
   String? _error;
+  bool _preparing = false;
   bool _isVideo = false;
 
   @override
@@ -42,17 +43,25 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
       // appliquer l'EXIF. On lit l'original et on normalise nous-mêmes.
       final XFile? file = await _picker.pickImage(source: source);
       if (file == null) return;
+      // Une photo iPhone pleine résolution prend un instant à réorienter et
+      // recompresser : sans retour visuel, l'écran semble figé.
+      if (!mounted) return;
+      setState(() => _preparing = true);
       // Oriente les pixels + borne la taille : ce que voit le modèle est
       // exactement ce que voit l'utilisateur.
       final Uint8List bytes = await prepareForUpload(await file.readAsBytes());
       if (!mounted) return;
       setState(() {
+        _preparing = false;
         _picked = file;
         _bytes = bytes;
       });
     } catch (_) {
       if (mounted) {
-        setState(() => _error = S.photoAccessErrorShort);
+        setState(() {
+          _preparing = false;
+          _error = S.photoAccessErrorShort;
+        });
       }
     }
   }
@@ -123,7 +132,12 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
             ],
           ),
           Gap.h24,
-          if (_bytes == null) _pickerBox() else _preview(),
+          if (_preparing)
+            _preparingView()
+          else if (_bytes == null)
+            _pickerBox()
+          else
+            _preview(),
           Gap.h24,
           TextField(
             controller: _prompt,
@@ -285,6 +299,20 @@ class _CustomPromptScreenState extends ConsumerState<CustomPromptScreen> {
             Text(label, style: MorfoType.label),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Pendant la réorientation/compression : évite l'impression de blocage.
+  Widget _preparingView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Gap.giant),
+      child: Column(
+        children: <Widget>[
+          const ProgressRingHolo(size: 48, strokeWidth: 4),
+          Gap.h16,
+          Text(S.preparingPhoto, style: MorfoType.caption),
+        ],
       ),
     );
   }

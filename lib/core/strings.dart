@@ -165,6 +165,8 @@ class S {
   static String get chosenStyle => _('Style choisi', 'Chosen style');
   static String get fromGallery => _('Depuis la galerie', 'From gallery');
   static String get takePhoto => _('Prendre une photo', 'Take a photo');
+  static String get preparingPhoto =>
+      _('Préparation de la photo…', 'Preparing photo…');
   static String get chooseAnotherPhoto =>
       _('Choisir une autre photo', 'Choose another photo');
   static String get photoAccessError => _(

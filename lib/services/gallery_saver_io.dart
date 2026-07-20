@@ -18,12 +18,19 @@ Future<SaveOutcome> saveToGallery({
   required bool isVideo,
 }) async {
   try {
-    // `toAlbum: true` : sur iOS, écrire dans un album nommé demande l'accès
-    // complet, pas seulement l'ajout.
-    if (!await Gal.hasAccess(toAlbum: true) &&
-        !await Gal.requestAccess(toAlbum: true)) {
+    // Écrire dans un album nommé exige l'accès **complet** sur iOS. Si
+    // l'utilisateur n'a accordé que « Ajouter des photos uniquement », on
+    // enregistre quand même — à la racine de la photothèque plutôt que dans
+    // l'album Morfo. Refuser ici serait un faux échec.
+    final bool canUseAlbum = await Gal.hasAccess(toAlbum: true) ||
+        await Gal.requestAccess(toAlbum: true);
+
+    if (!canUseAlbum &&
+        !await Gal.hasAccess() &&
+        !await Gal.requestAccess()) {
       return SaveOutcome.permissionDenied;
     }
+    final String? album = canUseAlbum ? _album : null;
 
     if (url.startsWith('http')) {
       final Response<List<int>> res = await Dio().get<List<int>>(
@@ -41,12 +48,12 @@ Future<SaveOutcome> saveToGallery({
           '${DateTime.now().millisecondsSinceEpoch}.mp4',
         ).writeAsBytes(data);
         try {
-          await Gal.putVideo(tmp.path, album: _album);
+          await Gal.putVideo(tmp.path, album: album);
         } finally {
           await tmp.delete().catchError((_) => tmp);
         }
       } else {
-        await Gal.putImageBytes(Uint8List.fromList(data), album: _album);
+        await Gal.putImageBytes(Uint8List.fromList(data), album: album);
       }
       return SaveOutcome.success;
     }
@@ -56,9 +63,9 @@ Future<SaveOutcome> saveToGallery({
     if (!await File(path).exists()) return SaveOutcome.failed;
 
     if (isVideo) {
-      await Gal.putVideo(path, album: _album);
+      await Gal.putVideo(path, album: album);
     } else {
-      await Gal.putImage(path, album: _album);
+      await Gal.putImage(path, album: album);
     }
     return SaveOutcome.success;
   } on GalException catch (e) {
