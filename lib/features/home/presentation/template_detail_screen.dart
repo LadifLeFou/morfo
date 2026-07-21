@@ -17,8 +17,8 @@ class TemplateDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final int cost = template.creditCost;
     final String costLabel = template.isVideo
-        ? 'Vidéo · $cost crédits'
-        : '$cost crédit${cost > 1 ? 's' : ''}';
+        ? S.videoCreditCost(cost)
+        : S.creditCost(cost);
 
     return MorfoScaffold(
       glow: false,

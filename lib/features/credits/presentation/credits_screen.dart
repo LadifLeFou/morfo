@@ -83,8 +83,7 @@ class CreditsScreen extends ConsumerWidget {
           ),
           Gap.h16,
           Text(
-            'Ton abonnement recharge tes crédits chaque semaine. '
-            'Les packs s’ajoutent à ton solde.',
+            S.creditsExplainer,
             style: MorfoType.caption,
             textAlign: TextAlign.center,
           ),

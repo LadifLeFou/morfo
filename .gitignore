@@ -47,3 +47,6 @@ app.*.map.json
 # Secrets & configuration locale (ne JAMAIS commiter)
 .env
 
+
+# Captures App Store, regenerables via `flutter drive`
+/build/screenshots/

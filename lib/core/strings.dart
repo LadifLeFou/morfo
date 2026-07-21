@@ -162,6 +162,10 @@ class S {
   static String get after => _('APRÈS', 'AFTER');
 
   // — Détail d'un style —
+  static String creditCost(int n) =>
+      _('$n crédit${n > 1 ? 's' : ''}', '$n credit${n > 1 ? 's' : ''}');
+  static String videoCreditCost(int n) =>
+      _('Vidéo · $n crédits', 'Video · $n credits');
   static String get tryThisStyle => _('Essayer ce style', 'Try this style');
 
   // — Import photo —
@@ -232,6 +236,10 @@ class S {
       );
 
   // — Crédits —
+  static String get creditsExplainer => _(
+        'Ton abonnement recharge tes crédits chaque semaine. Les packs s’ajoutent à ton solde.',
+        'Your subscription tops up your credits every week. Packs add to your balance.',
+      );
   static String get recharge => _('Recharger', 'Top up');
   static String get packsUnavailable =>
       _('Packs indisponibles.', 'Packs unavailable.');
