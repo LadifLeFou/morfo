@@ -436,6 +436,9 @@ class S {
         'Le suivi de la vidéo a été interrompu.',
         'Video tracking was interrupted.',
       );
+  static String get legalNotice => _('Mentions légales', 'Legal notice');
+  static String get publisher => _('Éditeur', 'Publisher');
+  static String get host => _('Hébergeur', 'Hosting provider');
   static String lastUpdated(String d) =>
       _('Dernière mise à jour : $d', 'Last updated: $d');
   static String contactLine(String c) => _('Contact : $c', 'Contact: $c');

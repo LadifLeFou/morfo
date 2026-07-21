@@ -29,12 +29,17 @@ class LegalScreen extends StatelessWidget {
   final LegalDoc doc;
 
   static const String _contact = 'support@morfo.app';
+
+  // ⚠️ À COMPLÉTER avant publication. La LCEN impose d'identifier l'éditeur
+  // (nom ou raison sociale, adresse) et l'hébergeur. En entreprise
+  // individuelle, l'éditeur est le nom du dirigeant.
+  static const String _publisherName = '[RAISON SOCIALE OU NOM]';
+  static const String _publisherAddress = '[ADRESSE POSTALE COMPLÈTE]';
+  static const String _publisherSiret = '[SIRET]';
+  static const String _hostName = 'Fly.io, Inc. — 2261 Market Street #4990, '
+      'San Francisco, CA 94114, États-Unis';
   static const String _updatedFr = '15 juillet 2026';
   static const String _updatedEn = 'July 15, 2026';
-
-  String get _entity => S.isFr
-      ? '[RAISON SOCIALE], éditeur de Morfo'
-      : '[LEGAL ENTITY], publisher of Morfo';
 
   String get _title => doc == LegalDoc.terms
       ? (S.isFr ? 'Conditions d’utilisation' : 'Terms of Use')
@@ -68,8 +73,16 @@ class LegalScreen extends StatelessWidget {
             Gap.h24,
           ],
           Text(S.contactLine(_contact), style: MorfoType.caption),
+          Gap.h24,
+          Text(S.legalNotice.toUpperCase(), style: MorfoType.eyebrow),
           Gap.h8,
-          Text(_entity, style: MorfoType.caption),
+          Text(
+            '${S.publisher} : $_publisherName\n'
+            '$_publisherAddress\n'
+            'SIRET : $_publisherSiret\n\n'
+            '${S.host} : $_hostName',
+            style: MorfoType.caption,
+          ),
         ],
       ),
     );
@@ -135,8 +148,10 @@ class LegalScreen extends StatelessWidget {
     ),
     _Section(
       '10. Droit applicable',
-      'Les présentes conditions sont régies par le droit [PAYS/JURIDICTION]. '
-          'Tout litige relève des tribunaux compétents de ce ressort.',
+      'Les présentes conditions sont régies par le droit français. À défaut '
+          'de résolution amiable, tout litige relève des tribunaux français '
+          'compétents. Conformément au Code de la consommation, vous pouvez '
+          'également recourir gratuitement à un médiateur de la consommation.',
     ),
   ];
 
@@ -198,8 +213,10 @@ class LegalScreen extends StatelessWidget {
     ),
     _Section(
       '10. Governing law',
-      'These terms are governed by the law of [COUNTRY/JURISDICTION]. Any '
-          'dispute falls under the competent courts of that jurisdiction.',
+      'These terms are governed by French law. Failing an amicable '
+          'settlement, any dispute falls under the competent French courts. '
+          'Under the French Consumer Code, you may also refer the matter free '
+          'of charge to a consumer mediator.',
     ),
   ];
 
@@ -239,8 +256,10 @@ class LegalScreen extends StatelessWidget {
     _Section(
       '6. Vos droits',
       'Vous pouvez demander l’accès, la rectification ou la suppression de vos '
-          'données, ainsi que la portabilité, en écrivant à $_contact. '
-          'Conformément au RGPD et aux lois applicables.',
+          'données, ainsi que la portabilité et la limitation du traitement, en '
+          'écrivant à $_contact. Conformément au RGPD. Si notre réponse ne vous '
+          'satisfait pas, vous pouvez introduire une réclamation auprès de la '
+          'CNIL, autorité française de protection des données (www.cnil.fr).',
     ),
     _Section(
       '7. Enfants',
@@ -295,9 +314,11 @@ class LegalScreen extends StatelessWidget {
     ),
     _Section(
       '6. Your rights',
-      'You may request access to, correction or deletion of your data, as well '
-          'as portability, by writing to $_contact. In accordance with the GDPR '
-          'and applicable laws.',
+      'You may request access to, correction or deletion of your data, as '
+          'well as portability and restriction of processing, by writing to '
+          '$_contact. In accordance with the GDPR. If our response does not '
+          'satisfy you, you may lodge a complaint with the CNIL, the French '
+          'data protection authority (www.cnil.fr).',
     ),
     _Section(
       '7. Children',
