@@ -19,7 +19,7 @@ import requests  # noqa: E402
 from asc import appel, get  # noqa: E402
 
 RACINE = Path(__file__).resolve().parent.parent
-CAPTURES = RACINE / "build" / "screenshots"
+CAPTURES = RACINE / "build" / "screenshots" / "ordonnees"
 
 # iPhone 6,9" (1320×2868) — le format exigé pour toute nouvelle soumission.
 TYPE_AFFICHAGE = "APP_IPHONE_67"
