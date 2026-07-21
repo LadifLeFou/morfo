@@ -122,10 +122,10 @@ class SettingsScreen extends ConsumerWidget {
           _SettingTile(
             icon: Icons.mail_outline,
             title: S.contact,
-            subtitle: 'support@morfo.app',
+            subtitle: 'mitrixxaniki94@gmail.com',
             onTap: () => ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(S.contactUs('support@morfo.app')),
+                content: Text(S.contactUs('mitrixxaniki94@gmail.com')),
               ),
             ),
           ),

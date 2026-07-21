@@ -38,7 +38,7 @@ Statut au 21 juillet 2026. ✅ = fait dans le repo · ⬜ = à faire par toi (ho
   - `https://ladiflefou.github.io/morfo/privacy.html`
   - `https://ladiflefou.github.io/morfo/terms.html`
 - ✅ **URL de support** : `https://ladiflefou.github.io/morfo/`
-- ⬜ **Boîte mail `support@morfo.app`** : encore à créer. Apple écrit à cette
+- ⬜ **Boîte mail `mitrixxaniki94@gmail.com`** : encore à créer. Apple écrit à cette
   adresse en cas de question sur la review — une adresse morte peut bloquer la
   validation.
 - ⬜ **Langue principale = `English (U.S.)`** au moment de créer l'app. Choix

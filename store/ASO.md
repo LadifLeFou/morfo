@@ -113,7 +113,7 @@ L'abonnement débloque tous les styles sans filigrane, les rendus haute résolut
 
 Conditions : https://ladiflefou.github.io/morfo/terms.html
 Confidentialité : https://ladiflefou.github.io/morfo/privacy.html
-Support : support@morfo.app
+Support : mitrixxaniki94@gmail.com
 ```
 
 ### Catégories
@@ -190,7 +190,7 @@ The subscription unlocks every style watermark-free, high-resolution renders, an
 
 Terms: https://ladiflefou.github.io/morfo/terms.html
 Privacy: https://ladiflefou.github.io/morfo/privacy.html
-Support: support@morfo.app
+Support: mitrixxaniki94@gmail.com
 ```
 
 ### Categories

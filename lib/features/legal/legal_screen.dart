@@ -28,7 +28,7 @@ class LegalScreen extends StatelessWidget {
 
   final LegalDoc doc;
 
-  static const String _contact = 'support@morfo.app';
+  static const String _contact = 'mitrixxaniki94@gmail.com';
 
   // La LCEN impose d'identifier l'éditeur (nom, adresse) et l'hébergeur.
   //
