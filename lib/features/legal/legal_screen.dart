@@ -30,11 +30,15 @@ class LegalScreen extends StatelessWidget {
 
   static const String _contact = 'support@morfo.app';
 
-  // ⚠️ À COMPLÉTER avant publication. La LCEN impose d'identifier l'éditeur
-  // (nom ou raison sociale, adresse) et l'hébergeur. En entreprise
-  // individuelle, l'éditeur est le nom du dirigeant.
-  static const String _publisherName = '[RAISON SOCIALE OU NOM]';
-  static const String _publisherAddress = '[ADRESSE POSTALE COMPLÈTE]';
+  // La LCEN impose d'identifier l'éditeur (nom, adresse) et l'hébergeur.
+  //
+  // ⚠️ Deux champs restent incomplets avant publication :
+  //  - le nom : la LCEN attend nom ET prénom pour un éditeur personne
+  //    physique, pas seulement un pseudonyme ;
+  //  - la rue : un code postal seul ne suffit pas.
+  static const String _publisherName = 'Ladi';
+  static const String _publisherAddress =
+      '[N° ET RUE], 69200 Vénissieux, France';
   static const String _publisherSiret = '[SIRET]';
   static const String _hostName = 'Fly.io, Inc. — 2261 Market Street #4990, '
       'San Francisco, CA 94114, États-Unis';
