@@ -266,13 +266,17 @@ class S {
       );
   static String creditsPack(int n) => _('$n crédits', '$n credits');
 
-  // Prix de démonstration. En production, l'App Store fournit des montants
-  // déjà localisés via RevenueCat — ces valeurs ne servent que de repli.
-  static String get priceWeekly => _('3,99 €', '€3.99');
-  static String get priceAnnual => _('99,99 €', '€99.99');
-  static String get pricePack100 => _('2,99 €', '€2.99');
-  static String get pricePack300 => _('6,99 €', '€6.99');
-  static String get pricePack1000 => _('19,99 €', '€19.99');
+  // Prix de démonstration uniquement. En production, l'App Store fournit les
+  // montants déjà localisés via RevenueCat — devise et palier compris.
+  //
+  // La version anglaise vise le marché US, cible principale : elle doit donc
+  // afficher des dollars. Montrer « € » à un Américain trahit une app mal
+  // localisée avant même le premier achat.
+  static String get priceWeekly => _('3,99 €', '\$4.99');
+  static String get priceAnnual => _('99,99 €', '\$99.99');
+  static String get pricePack100 => _('2,99 €', '\$2.99');
+  static String get pricePack300 => _('6,99 €', '\$6.99');
+  static String get pricePack1000 => _('19,99 €', '\$19.99');
 
   // — Génération (suite) —
   static String get genCancelled =>
