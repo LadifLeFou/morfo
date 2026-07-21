@@ -21,6 +21,23 @@
 
 ---
 
+## 🇺🇸 Cible principale : les États-Unis
+
+Le marché US prime sur la France. Trois conséquences concrètes :
+
+1. **La langue principale d'App Store Connect doit être `English (U.S.)`**, pas
+   le français. C'est elle qui sert de repli sur tous les territoires où tu n'as
+   pas de localisation — donc la quasi-totalité du monde.
+2. **Optimise l'anglais en premier.** Le français devient une localisation
+   secondaire, utile mais pas prioritaire.
+3. **Raisonne tes prix en USD.** Apple applique des paliers ; 3,99 € correspond
+   au palier $4.99 aux États-Unis, pas $3.99. Vérifie chaque produit.
+
+> Ce choix se fait **à la création de l'app** dans App Store Connect et se
+> change ensuite difficilement. Ne te trompe pas au moment du formulaire.
+
+---
+
 ## ⚠️ Deux corrections à ne pas perdre de vue
 
 **Le domaine `morfo.app` appartient à quelqu'un d'autre** (« MORFO — AK
@@ -34,7 +51,7 @@ trompeuses (2.3.1) et c'est la première cause de demandes de remboursement.
 
 ---
 
-## 🇫🇷 Français (localisation principale)
+## 🇫🇷 Français — localisation secondaire
 
 ### Nom de l'app (≤ 30)
 ```
@@ -97,30 +114,80 @@ Support : support@morfo.app
 
 ---
 
-## 🇬🇧 English
+## 🇺🇸 English (U.S.) — LOCALISATION PRINCIPALE
 
 ### App name (≤ 30)
 ```
-Morfo: AI Photo & Before-After
+Morfo: AI Selfie & Avatars
 ```
-`30 car.`
+`26 car.` — indexe *morfo, ai, selfie, avatars*
+
+> L'ancien nom, « Morfo: AI Photo & Before-After », gaspillait 14 caractères du
+> champ le plus lourd. **« Before-After » n'est pas une requête** : personne ne
+> cherche ça. *Selfie* et *avatar* sont au contraire deux des intentions les plus
+> tapées de la catégorie.
 
 ### Subtitle (≤ 30)
 ```
-Turn selfies into dream art
+AI headshots & photo styles
 ```
-`27 car.`
+`27 car.` — indexe *headshots, photo, styles*
+
+> *Headshot* est une requête à forte intention aux États-Unis (LinkedIn,
+> profils pro) et tu as exactement ce style. *Photo* est récupéré ici puisqu'il
+> a quitté le nom.
 
 ### Keywords (≤ 100)
 ```
-filter,avatar,face,transform,generator,cartoon,editor,makeover,headshot,retro,aesthetic,glow
+yearbook,filter,face,editor,generator,makeover,glow up,art,retro,aesthetic,prom,luxury,transform
 ```
-`92 car.`
+`96 car.` — aucun doublon avec le nom ni le sous-titre.
+
+> **`yearbook` est le mot-clé le plus rentable de la liste.** La mode des photos
+> de yearbook années 90 par IA a explosé aux États-Unis, la demande est
+> installée, et c'est littéralement un de tes 14 styles. `prom` et `luxury`
+> suivent la même logique : des styles que tu livres vraiment.
+>
+> Règle absolue : **ne référence jamais un style que tu n'as pas.** Apple
+> sanctionne les mots-clés hors sujet, et un utilisateur déçu se désabonne.
 
 ### Promotional text (≤ 170)
 ```
-New styles every week. Turn your selfie into a movie poster, a game hero or a blocky character. Results in seconds.
+New styles every week. Turn your selfie into a 90s yearbook photo, a movie poster or a luxury lifestyle shot. Results in seconds.
 ```
+
+### Description (≤ 4000)
+```
+Turn your photos into real transformations with AI.
+
+Upload a selfie, pick a style, and let Morfo do the rest. In seconds your portrait becomes epic, cinematic, retro or glamorous — then turns into a unique holographic card you'll actually want to share.
+
+▸ 14 STYLES, MORE EVERY WEEK
+90s yearbook photo, Renaissance oil painting, blockbuster movie poster, golden hour light, quiet luxury, flash party shot, prom night, luxury lifestyle, blocky cube world, open-world game art…
+
+▸ WRITE YOUR OWN STYLE
+Free prompt mode understands what you ask and fills in the rest: "as a medieval king on his throne" is enough to get the crown, the fur, the heraldic banners.
+
+▸ STUNNING BEFORE / AFTER
+Slide to compare your original photo with the result. The wow moment, every time.
+
+▸ A HOLOGRAPHIC CARD TO COLLECT
+Every result becomes a spectral foil card that reacts as you tilt your phone. Made for your story.
+
+▸ YOUR PHOTOS STAY YOURS
+They are used only to produce your result. Never stored, never sold, never used for advertising.
+
+SUBSCRIPTION
+The subscription unlocks every style watermark-free, high-resolution renders, and tops up 650 credits every week — around fifteen images. It renews automatically and can be cancelled anytime in your App Store account settings.
+
+Terms: https://[YOUR-DOMAIN]/terms
+Privacy: https://[YOUR-DOMAIN]/privacy
+Support: support@morfo.app
+```
+
+### Categories
+- **Primary:** Photo & Video
+- **Secondary:** Entertainment
 
 ---
 
