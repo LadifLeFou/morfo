@@ -50,3 +50,7 @@ app.*.map.json
 
 # Captures App Store, regenerables via `flutter drive`
 /build/screenshots/
+
+# Cle privee App Store Connect API — acces complet au compte Apple.
+# Le depot est PUBLIC : ne jamais versionner.
+*.p8
