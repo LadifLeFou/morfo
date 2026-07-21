@@ -41,9 +41,17 @@ Le marché US prime sur la France. Trois conséquences concrètes :
 ## ⚠️ Deux corrections à ne pas perdre de vue
 
 **Le domaine `morfo.app` appartient à quelqu'un d'autre** (« MORFO — AK
-Nutrition »). Les URL légales ci-dessous sont donc des placeholders : héberge
-`store/legal/*.html` sur un domaine à toi et remplace-les. Une *Privacy Policy
-URL* qui n'est pas la tienne = rejet.
+Nutrition ») : ne l'utilise jamais dans tes métadonnées. Les documents légaux
+sont désormais publiés sur **GitHub Pages**, gratuitement :
+
+| Champ App Store Connect | URL |
+|---|---|
+| **Privacy Policy URL** *(obligatoire)* | `https://ladiflefou.github.io/morfo/privacy.html` |
+| **Support URL** *(obligatoire)* | `https://ladiflefou.github.io/morfo/` |
+
+Source dans `docs/`, servie automatiquement à chaque push sur `main`. Si tu
+achètes un domaine plus tard, tu pourras le brancher dessus sans repasser par
+la validation d'Apple.
 
 **Ne promets jamais « illimité ».** L'abonnement donne 650 crédits/semaine, soit
 **~14 images par semaine** (45 crédits l'image). Apple rejette les métadonnées
@@ -103,8 +111,8 @@ Elles servent uniquement à produire ton rendu. Elles ne sont ni conservées, ni
 ABONNEMENT
 L'abonnement débloque tous les styles sans filigrane, les rendus haute résolution, et recharge 650 crédits chaque semaine — de quoi générer une quinzaine d'images hebdomadaires. Il se renouvelle automatiquement ; annulable à tout moment dans les réglages de ton compte App Store.
 
-Conditions : https://[TON-DOMAINE]/terms
-Confidentialité : https://[TON-DOMAINE]/privacy
+Conditions : https://ladiflefou.github.io/morfo/terms.html
+Confidentialité : https://ladiflefou.github.io/morfo/privacy.html
 Support : support@morfo.app
 ```
 
@@ -180,8 +188,8 @@ They are used only to produce your result. Never stored, never sold, never used 
 SUBSCRIPTION
 The subscription unlocks every style watermark-free, high-resolution renders, and tops up 650 credits every week — around fifteen images. It renews automatically and can be cancelled anytime in your App Store account settings.
 
-Terms: https://[YOUR-DOMAIN]/terms
-Privacy: https://[YOUR-DOMAIN]/privacy
+Terms: https://ladiflefou.github.io/morfo/terms.html
+Privacy: https://ladiflefou.github.io/morfo/privacy.html
 Support: support@morfo.app
 ```
 

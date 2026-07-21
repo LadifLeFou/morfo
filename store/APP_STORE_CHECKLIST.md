@@ -30,11 +30,19 @@ Statut au 21 juillet 2026. ✅ = fait dans le repo · ⬜ = à faire par toi (ho
 - ⬜ **Icône 1024×1024** sans transparence ni coins arrondis (le papillon Morfo).
 - ⬜ **Captures d'écran** aux tailles requises (6.7", 6.5", 5.5", iPad 12.9").
   → Mets l'**avant/après** en 1re capture (meilleur taux de conversion).
-- ⬜ **App Privacy (nutrition labels)** : déclare les données collectées —
-  Photos (contenu utilisateur), Achats, Identifiants, Données d'usage/diagnostic.
-- ⬜ **URL de confidentialité** (obligatoire) + **URL des conditions/EULA** :
-  héberge `store/legal/privacy.html` et `terms.html` (ex. https://morfo.app/privacy).
-- ⬜ **URL de support** + e-mail : crée la boîte `support@morfo.app`.
+- ✅ **App Privacy (nutrition labels)** : réponses exactes dans
+  `store/APP_PRIVACY.md`. À déclarer : Photos, User ID, Purchase History — et
+  **rien d'autre**, faute du moindre SDK d'analytics. Pas de suivi publicitaire.
+- ✅ **URL de confidentialité** et **URL des conditions**, publiées sur
+  GitHub Pages depuis `docs/` :
+  - `https://ladiflefou.github.io/morfo/privacy.html`
+  - `https://ladiflefou.github.io/morfo/terms.html`
+- ✅ **URL de support** : `https://ladiflefou.github.io/morfo/`
+- ⬜ **Boîte mail `support@morfo.app`** : encore à créer. Apple écrit à cette
+  adresse en cas de question sur la review — une adresse morte peut bloquer la
+  validation.
+- ⬜ **Langue principale = `English (U.S.)`** au moment de créer l'app. Choix
+  quasi irréversible, et le marché US est la cible prioritaire.
 - ⬜ **Abonnements** : crée le groupe d'abonnement, les produits (hebdo/annuel),
   leurs **noms d'affichage localisés** (voir `store/ASO.md`) et une **capture de
   review** du paywall. Sinon rejet 2.3.x / 3.1.2.
