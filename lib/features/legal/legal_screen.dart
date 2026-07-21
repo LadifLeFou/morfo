@@ -32,11 +32,12 @@ class LegalScreen extends StatelessWidget {
 
   // La LCEN impose d'identifier l'éditeur (nom, adresse) et l'hébergeur.
   //
-  // ⚠️ Deux champs restent incomplets avant publication :
-  //  - le nom : la LCEN attend nom ET prénom pour un éditeur personne
-  //    physique, pas seulement un pseudonyme ;
-  //  - la rue : un code postal seul ne suffit pas.
-  static const String _publisherName = 'Ladi';
+  // Identité civile et non « Ladi » : la LCEN exige le nom de l'éditeur
+  // personne physique, et Apple recoupe avec le compte développeur — dont
+  // l'équipe est déjà enregistrée sous « Enes Ayyildiz ».
+  //
+  // ⚠️ La rue reste à compléter : un code postal seul ne suffit pas.
+  static const String _publisherName = 'Enes Ayyildiz';
   static const String _publisherAddress =
       '[N° ET RUE], 69200 Vénissieux, France';
   static const String _publisherSiret = '[SIRET]';

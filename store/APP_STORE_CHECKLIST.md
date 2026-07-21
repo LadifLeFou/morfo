@@ -1,6 +1,6 @@
 # Checklist soumission App Store — Morfo
 
-Statut au 15 juillet 2026. ✅ = fait dans le repo · ⬜ = à faire par toi (hors code).
+Statut au 21 juillet 2026. ✅ = fait dans le repo · ⬜ = à faire par toi (hors code).
 
 ## Fait dans le code
 - ✅ Nom de marque unifié partout : **Morfo** (plus de « Morpho »).
@@ -13,10 +13,20 @@ Statut au 15 juillet 2026. ✅ = fait dans le repo · ⬜ = à faire par toi (ho
   paywall — exigée par la règle 3.1.2.
 - ✅ Liens légaux du paywall fonctionnels.
 - ✅ SEO web (`index.html`, `manifest.json`) + fiche ASO (`store/ASO.md`).
-- ✅ Versions hébergeables des documents légaux (`store/legal/*.html`).
+- ✅ Versions hébergeables des documents légaux (`store/legal/*.html`),
+  synchronisées avec les versions in-app (droit français, CNIL, médiateur de
+  la consommation, mentions légales LCEN).
+- ✅ Réponses au questionnaire **App Privacy** d'Apple : `store/APP_PRIVACY.md`.
+- ✅ Interface bilingue FR/EN avec sélecteur dans les Réglages.
+- ✅ SDK RevenueCat intégré (inerte tant que `REVENUECAT_PUBLIC_SDK_KEY` est
+  vide → service de démo).
 
 ## À faire dans App Store Connect (hors code)
-- ⬜ **Bundle ID** `com.morfo.app` + certificats/signing (compte développeur Apple, 99 $/an).
+- ✅ **Bundle ID** `com.morfo.app` + signature automatique configurée.
+- ⏳ **Compte développeur Apple** (99 €/an) : payé le 21/07/2026, en attente de
+  validation par Apple. Tant que le profil expire en 7 jours, ce n'est pas actif.
+- ⬜ **Mentions légales** : compléter le n° et la rue à Vénissieux, plus le SIRET
+  (`legal_screen.dart` et `store/legal/*.html`).
 - ⬜ **Icône 1024×1024** sans transparence ni coins arrondis (le papillon Morfo).
 - ⬜ **Captures d'écran** aux tailles requises (6.7", 6.5", 5.5", iPad 12.9").
   → Mets l'**avant/après** en 1re capture (meilleur taux de conversion).
