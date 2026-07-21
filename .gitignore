@@ -54,3 +54,7 @@ app.*.map.json
 # Cle privee App Store Connect API — acces complet au compte Apple.
 # Le depot est PUBLIC : ne jamais versionner.
 *.p8
+
+# Identifiants API App Store Connect (contient des references a la cle privee)
+tools/asc_config.json
+.venv-asc/
