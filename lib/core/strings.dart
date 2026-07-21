@@ -246,6 +246,10 @@ class S {
       _('Débloque tout Morfo', 'Unlock all of Morfo');
   static String get creditsPerWeek =>
       _('650 crédits / semaine', '650 credits / week');
+  static String get purchaseFailed => _(
+        'L’achat n’a pas abouti. Aucun montant n’a été débité.',
+        'The purchase did not go through. You were not charged.',
+      );
   static String get purchasesRestored =>
       _('Achats restaurés.', 'Purchases restored.');
   static String get noPurchasesToRestore =>

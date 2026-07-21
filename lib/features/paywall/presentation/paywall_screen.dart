@@ -41,13 +41,24 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 orElse: () => offers.first)
             .id;
     setState(() => _busy = true);
-    final bool ok =
+    final PurchaseOutcome outcome =
         await ref.read(purchasesServiceProvider).purchaseSubscription(id);
     if (!mounted) return;
     setState(() => _busy = false);
-    if (ok) {
-      ref.read(subscriptionProvider.notifier).setSubscribed(true);
-      _onUnlocked();
+
+    switch (outcome) {
+      case PurchaseOutcome.success:
+        ref.read(subscriptionProvider.notifier).setSubscribed(true);
+        _onUnlocked();
+      case PurchaseOutcome.cancelled:
+        // Geste volontaire : ne rien afficher serait ici la bonne réaction.
+        break;
+      case PurchaseOutcome.failed:
+        // Sans ce message, l'utilisateur voyait le bouton se réactiver sans
+        // explication et concluait que l'app était cassée.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.purchaseFailed)),
+        );
     }
   }
 

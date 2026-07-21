@@ -2,6 +2,7 @@
 //
 // Activée seulement si `REVENUECAT_PUBLIC_SDK_KEY` est renseignée dans
 // `.env` ; sinon `purchases_service_io.dart` retombe sur la démo.
+import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../core/strings.dart';
@@ -102,26 +103,36 @@ class RevenueCatPurchasesService implements PurchasesService {
       };
 
   @override
-  Future<bool> purchaseSubscription(String offerId) async {
+  Future<PurchaseOutcome> purchaseSubscription(String offerId) async {
     try {
       final Offerings offerings = await Purchases.getOfferings();
       final Package? pkg = offerings.current?.availablePackages
           .where((Package p) => p.identifier == offerId)
           .firstOrNull;
-      if (pkg == null) return false;
+      if (pkg == null) return PurchaseOutcome.failed;
       final PurchaseResult result =
           await Purchases.purchase(PurchaseParams.package(pkg));
       return result.customerInfo.entitlements.active
-          .containsKey(_entitlementId);
-    } on PurchasesErrorCode {
-      return false;
+              .containsKey(_entitlementId)
+          ? PurchaseOutcome.success
+          : PurchaseOutcome.failed;
+    } on PlatformException catch (e) {
+      return _outcomeFor(e);
     } catch (_) {
-      return false;
+      return PurchaseOutcome.failed;
     }
   }
 
+  /// Fermer la feuille de paiement n'est pas une panne : on le remonte à part
+  /// pour ne pas afficher d'erreur à un utilisateur qui a simplement renoncé.
+  PurchaseOutcome _outcomeFor(PlatformException e) =>
+      PurchasesErrorHelper.getErrorCode(e) ==
+              PurchasesErrorCode.purchaseCancelledError
+          ? PurchaseOutcome.cancelled
+          : PurchaseOutcome.failed;
+
   @override
-  Future<bool> purchaseCredits(String packId) async {
+  Future<PurchaseOutcome> purchaseCredits(String packId) async {
     try {
       final Offerings offerings = await Purchases.getOfferings();
       final Package? pkg = offerings
@@ -129,11 +140,13 @@ class RevenueCatPurchasesService implements PurchasesService {
           ?.availablePackages
           .where((Package p) => p.identifier == packId)
           .firstOrNull;
-      if (pkg == null) return false;
+      if (pkg == null) return PurchaseOutcome.failed;
       await Purchases.purchase(PurchaseParams.package(pkg));
-      return true;
+      return PurchaseOutcome.success;
+    } on PlatformException catch (e) {
+      return _outcomeFor(e);
     } catch (_) {
-      return false;
+      return PurchaseOutcome.failed;
     }
   }
 

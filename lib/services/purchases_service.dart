@@ -54,14 +54,28 @@ class CreditPack {
 
 /// Contrat achats/abonnements — implémenté par RevenueCat sur mobile,
 /// par [DemoPurchasesService] sur web/dev.
+/// Issue d'une tentative d'achat.
+///
+/// Distinguer l'annulation de l'échec est indispensable : fermer la feuille
+/// de paiement est un geste volontaire, pas une erreur à signaler comme telle.
+enum PurchaseOutcome {
+  success,
+
+  /// L'utilisateur a fermé la feuille de paiement. Rien à afficher.
+  cancelled,
+
+  /// Paiement refusé, réseau coupé, produit introuvable…
+  failed,
+}
+
 abstract interface class PurchasesService {
   Future<void> init();
   String get appUserId;
   Future<bool> isSubscribed();
   Future<List<SubscriptionOffer>> offers();
   Future<List<CreditPack>> creditPacks();
-  Future<bool> purchaseSubscription(String offerId);
-  Future<bool> purchaseCredits(String packId);
+  Future<PurchaseOutcome> purchaseSubscription(String offerId);
+  Future<PurchaseOutcome> purchaseCredits(String packId);
   Future<bool> restore();
 }
 
@@ -125,16 +139,16 @@ class DemoPurchasesService implements PurchasesService {
       ];
 
   @override
-  Future<bool> purchaseSubscription(String offerId) async {
+  Future<PurchaseOutcome> purchaseSubscription(String offerId) async {
     await _wait();
     _subscribed = true;
-    return true;
+    return PurchaseOutcome.success;
   }
 
   @override
-  Future<bool> purchaseCredits(String packId) async {
+  Future<PurchaseOutcome> purchaseCredits(String packId) async {
     await _wait();
-    return true;
+    return PurchaseOutcome.success;
   }
 
   @override

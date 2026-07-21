@@ -20,14 +20,20 @@ class CreditsScreen extends ConsumerWidget {
   Future<void> _buy(WidgetRef ref, BuildContext context, CreditPack pack) async {
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final CreditsNotifier credits = ref.read(creditsProvider.notifier);
-    final bool ok =
+    final PurchaseOutcome outcome =
         await ref.read(purchasesServiceProvider).purchaseCredits(pack.id);
-    if (ok) {
-      Haptics.success();
-      credits.add(pack.credits);
-      messenger.showSnackBar(
-        SnackBar(content: Text(S.creditsAdded(pack.credits))),
-      );
+
+    switch (outcome) {
+      case PurchaseOutcome.success:
+        Haptics.success();
+        credits.add(pack.credits);
+        messenger.showSnackBar(
+          SnackBar(content: Text(S.creditsAdded(pack.credits))),
+        );
+      case PurchaseOutcome.cancelled:
+        break;
+      case PurchaseOutcome.failed:
+        messenger.showSnackBar(SnackBar(content: Text(S.purchaseFailed)));
     }
   }
 
