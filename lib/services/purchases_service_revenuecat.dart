@@ -45,7 +45,11 @@ class RevenueCatPurchasesService implements PurchasesService {
 
   @override
   Future<void> init() async {
-    await Purchases.setLogLevel(LogLevel.warn);
+    // En release on reste discret ; ailleurs le SDK détaille quels
+    // identifiants il demande à Apple et lesquels sont refusés — la seule
+    // façon de diagnostiquer un paywall vide.
+    await Purchases.setLogLevel(
+        kReleaseMode ? LogLevel.warn : LogLevel.debug);
     await Purchases.configure(PurchasesConfiguration(_apiKey));
   }
 
