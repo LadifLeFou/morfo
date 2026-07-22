@@ -39,7 +39,7 @@ class LegalScreen extends StatelessWidget {
   // ⚠️ La rue reste à compléter : un code postal seul ne suffit pas.
   static const String _publisherName = 'Enes Ayyildiz';
   static const String _publisherAddress =
-      'Rue Saint-Honoré, 69200 Vénissieux, France';
+      '3 rue Saint-Honoré, 69200 Vénissieux, France';
   static const String _publisherSiret = '[SIRET]';
   static const String _hostName = 'Fly.io, Inc. — 2261 Market Street #4990, '
       'San Francisco, CA 94114, États-Unis';
