@@ -87,20 +87,34 @@ class RevenueCatPurchasesService implements PurchasesService {
       return CreditPack(
         id: p.identifier,
         title: sp.title,
-        credits: _creditsForProduct(p.identifier),
+        credits: _creditsForProduct(p),
         price: sp.priceString,
       );
     }).toList();
   }
 
-  /// Mappe un identifiant de produit → nombre de crédits (à aligner sur ta
-  /// config App Store Connect).
-  int _creditsForProduct(String id) => switch (id) {
-        'pack_100' => 100,
-        'pack_300' => 300,
-        'pack_1000' => 1000,
-        _ => 0,
-      };
+  /// Nombre de crédits d'un pack.
+  ///
+  /// On interroge **deux** identifiants : celui du package RevenueCat et celui
+  /// du produit App Store. Ils ne coïncident pas forcément — RevenueCat laisse
+  /// nommer ses packages librement, alors que l'App Store impose
+  /// `com.morfo.app.pack100`. Se fier à un seul des deux ferait renvoyer 0
+  /// crédit sur un simple écart de nommage : l'utilisateur paierait sans rien
+  /// recevoir.
+  ///
+  /// L'ordre de test compte : « 1000 » contient « 100 ».
+  int _creditsForProduct(Package p) {
+    final List<String> identifiants = <String>[
+      p.identifier,
+      p.storeProduct.identifier,
+    ];
+    for (final String id in identifiants) {
+      for (final int montant in const <int>[1000, 300, 100]) {
+        if (id.contains('$montant')) return montant;
+      }
+    }
+    return 0;
+  }
 
   @override
   Future<PurchaseOutcome> purchaseSubscription(String offerId) async {
