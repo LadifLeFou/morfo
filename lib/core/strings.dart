@@ -433,6 +433,7 @@ class S {
     'selfie_star':
         'A selfie with the celebrity of your choice: describe them, we handle the rest.',
     'luxe': 'Luxury cars, money and penthouse — the dream life.',
+    'muscle': 'Your body, athletic and naturally muscular.',
     'gta': 'GTA V loading-screen style.',
     'minecraft': 'Minecraft character and world.',
     'renaissance': 'Classic oil-painting portrait.',

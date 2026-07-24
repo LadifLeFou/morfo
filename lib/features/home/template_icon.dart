@@ -15,6 +15,7 @@ IconData iconForTemplate(Template t) => switch (t.id) {
       'prom' => Icons.celebration_outlined,
       'selfie_star' => Icons.star_outline,
       'luxe' => Icons.workspace_premium_outlined,
+      'muscle' => Icons.fitness_center_outlined,
       'gta' => Icons.sports_esports_outlined,
       'minecraft' => Icons.grid_view_outlined,
       'renaissance' => Icons.palette_outlined,

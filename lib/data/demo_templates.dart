@@ -30,6 +30,12 @@ const List<Template> demoTemplates = <Template>[
     description: 'Voitures de luxe, argent et penthouse — la vie de rêve.',
     category: MorfoCategory.tendance,
   ),
+  Template(
+    id: 'muscle',
+    title: 'Musculation',
+    description: 'Ton corps en version athlétique, naturelle et crédible.',
+    category: MorfoCategory.tendance,
+  ),
 
   // — Aesthetic —
   Template(
