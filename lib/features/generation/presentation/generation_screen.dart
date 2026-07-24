@@ -214,29 +214,7 @@ class _GenerationScreenState extends ConsumerState<GenerationScreen>
           ),
           // Discrète : l'anneau et le pourcentage restent l'information
           // principale, la mascotte n'est qu'une signature de marque.
-          Opacity(
-            opacity: 0.22,
-            child: ShaderMask(
-              blendMode: BlendMode.dstIn,
-              shaderCallback: (Rect r) => const RadialGradient(
-                colors: <Color>[
-                  Colors.white,
-                  Colors.white,
-                  Colors.transparent,
-                ],
-                stops: <double>[0.0, 0.55, 0.80],
-              ).createShader(r),
-              child: Image.asset(
-                'assets/images/mascot.png',
-                width: 168,
-                height: 168,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                errorBuilder: (BuildContext _, Object _, StackTrace? _) =>
-                    const SizedBox.shrink(),
-              ),
-            ),
-          ),
+          const MorfoMascot(size: 168, opacity: 0.22),
         ],
       ),
     );

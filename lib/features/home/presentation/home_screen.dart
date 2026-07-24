@@ -150,7 +150,7 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(Gap.xl, Gap.md, Gap.md, Gap.sm),
       child: Row(
         children: <Widget>[
-          Image.asset('assets/images/mascot.png', width: 30, height: 30),
+          const MorfoMascot(size: 34),
           Gap.w8,
           ShaderMask(
             blendMode: BlendMode.srcIn,

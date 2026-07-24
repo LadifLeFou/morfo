@@ -6,6 +6,7 @@ export 'morfo_spacing.dart';
 export 'morfo_theme.dart';
 export 'morfo_typography.dart';
 export 'widgets/before_after_slider.dart';
+export 'widgets/morfo_mascot.dart';
 export 'widgets/butterfly_field.dart';
 export 'widgets/category_chip.dart';
 export 'widgets/glass_card.dart';

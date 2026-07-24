@@ -121,24 +121,7 @@ class _MascotBadge extends StatelessWidget {
           _buildHalo(halo, reduce),
           // Masque radial : les bords carrés + le cadre néon de l'image se
           // fondent dans le noir, seul le papillon ressort.
-          ShaderMask(
-            blendMode: BlendMode.dstIn,
-            shaderCallback: (Rect r) => const RadialGradient(
-              colors: <Color>[
-                Colors.white,
-                Colors.white,
-                Colors.transparent,
-              ],
-              stops: <double>[0.0, 0.55, 0.80],
-            ).createShader(r),
-            child: Image.asset(
-              'assets/images/mascot.png',
-              width: mascot,
-              height: mascot,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-            ),
-          ),
+          MorfoMascot(size: mascot),
         ],
       ),
     );
