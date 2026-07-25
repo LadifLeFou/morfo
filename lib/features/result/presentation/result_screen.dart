@@ -57,7 +57,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final SaveOutcome outcome = await saveToGallery(
-      url: widget.result.outputUrl,
+      url: widget.result.displayUrl,
       isVideo: widget.result.isVideo,
     );
     if (!mounted) return;
@@ -104,7 +104,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             interactive: !r.isVideo,
             child: r.isVideo
                 ? MorfoVideo(url: r.outputUrl)
-                : MorfoImage(url: r.outputUrl, icon: icon),
+                : MorfoImage(url: r.displayUrl, icon: icon),
           )
               .animate()
               .fadeIn(duration: 500.ms)
@@ -126,7 +126,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             BeforeAfterSlider(
               aspectRatio: 3 / 4,
               before: MorfoImage(url: r.sourcePath!, icon: Icons.person_outline),
-              after: MorfoImage(url: r.outputUrl, icon: icon),
+              after: MorfoImage(url: r.displayUrl, icon: icon),
             ),
             Gap.h24,
           ],

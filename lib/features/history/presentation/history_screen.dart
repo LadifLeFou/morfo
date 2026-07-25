@@ -130,7 +130,7 @@ class _HistoryTile extends StatelessWidget {
           fit: StackFit.expand,
           children: <Widget>[
             MorfoImage(
-              url: result.outputUrl,
+              url: result.displayUrl,
               icon: iconForCategory(result.category),
             ),
             const DecoratedBox(

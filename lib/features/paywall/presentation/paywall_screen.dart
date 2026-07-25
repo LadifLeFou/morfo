@@ -35,6 +35,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   bool _busy = false;
 
   Future<void> _subscribe(List<SubscriptionOffer> offers) async {
+    if (offers.isEmpty) return; // garde : aucune offre à acheter
     final String id = _selected ??
         offers
             .firstWhere((SubscriptionOffer o) => o.highlighted,
@@ -124,36 +125,45 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               for (final String b in S.paywallPerks) _BenefitRow(text: b),
               Gap.h24,
               offers.when(
-                data: (List<SubscriptionOffer> list) => Column(
-                  children: <Widget>[
-                    for (final SubscriptionOffer o in list)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: Gap.md),
-                        child: _OfferCard(
-                          offer: o,
-                          selected: (_selected ?? _defaultId(list)) == o.id,
-                          onTap: () => setState(() => _selected = o.id),
-                        ),
+                // Liste vide = produits pas encore servis par l'App Store
+                // (contrat tout juste actif, propagation en cours). On l'affiche
+                // comme une indisponibilité temporaire avec un bouton réessayer,
+                // plutôt qu'un trou muet suivi d'un CTA qui planterait.
+                data: (List<SubscriptionOffer> list) => list.isEmpty
+                    ? _Unavailable(
+                        onRetry: () => ref.invalidate(_offersProvider))
+                    : Column(
+                        children: <Widget>[
+                          for (final SubscriptionOffer o in list)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: Gap.md),
+                              child: _OfferCard(
+                                offer: o,
+                                selected:
+                                    (_selected ?? _defaultId(list)) == o.id,
+                                onTap: () => setState(() => _selected = o.id),
+                              ),
+                            ),
+                        ],
                       ),
-                  ],
-                ),
                 loading: () => const _OffersSkeleton(),
-                error: (Object e, StackTrace _) => Text(
-                  S.offersUnavailable,
-                  style: MorfoType.bodyMedium,
-                ),
+                error: (Object e, StackTrace _) =>
+                    _Unavailable(onRetry: () => ref.invalidate(_offersProvider)),
               ),
               Gap.h16,
-              GradientButton(
-                label: _ctaLabel(offers),
-                icon: _currentOffer(offers)?.hasTrial ?? false
-                    ? Icons.lock_open_rounded
-                    : null,
-                loading: _busy,
-                onPressed: offers.hasValue
-                    ? () => _subscribe(offers.requireValue)
-                    : null,
-              ),
+              // Pas d'offre disponible → pas de CTA d'achat : il ne mènerait
+              // à rien et pouvait planter sur une liste vide.
+              if (_currentOffer(offers) != null || !offers.hasValue)
+                GradientButton(
+                  label: _ctaLabel(offers),
+                  icon: _currentOffer(offers)?.hasTrial ?? false
+                      ? Icons.lock_open_rounded
+                      : null,
+                  loading: _busy,
+                  onPressed: _currentOffer(offers) != null
+                      ? () => _subscribe(offers.requireValue)
+                      : null,
+                ),
               Gap.h8,
               if (_currentOffer(offers)?.hasTrial ?? false)
                 _TrialLine(offer: _currentOffer(offers)!),
@@ -280,6 +290,44 @@ class _LockedPreview extends StatelessWidget {
     );
   }
 }
+
+
+/// Offres momentanement indisponibles (chargement echoue, ou produits App Store
+/// pas encore propages). Message clair + bouton reessayer, jamais un trou muet.
+class _Unavailable extends StatelessWidget {
+  const _Unavailable({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: Gap.xl, horizontal: Gap.lg),
+      decoration: BoxDecoration(
+        color: MorfoColors.surface2.withValues(alpha: 0.5),
+        borderRadius: Radii.brLg,
+        border: Border.all(color: MorfoColors.stroke),
+      ),
+      child: Column(
+        children: <Widget>[
+          Text(
+            S.offersUnavailable,
+            textAlign: TextAlign.center,
+            style: MorfoType.bodyMedium.copyWith(color: MorfoColors.muted),
+          ),
+          Gap.h12,
+          TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh, size: 18),
+            label: Text(S.offersRetry),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class _BenefitRow extends StatelessWidget {
   const _BenefitRow({required this.text});

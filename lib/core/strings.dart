@@ -365,6 +365,7 @@ class S {
         'Subscribe to reveal your result',
       );
   static String get livePortrait => _('Portrait vivant', 'Live portrait');
+  static String get offersRetry => _('Réessayer', 'Retry');
   static String get offersUnavailable => _(
         'Offres indisponibles pour le moment.',
         'Offers unavailable right now.',

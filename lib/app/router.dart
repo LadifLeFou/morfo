@@ -31,22 +31,30 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/home', builder: (_, _) => const HomeScreen()),
     GoRoute(
       path: '/template',
+      // Ces routes exigent un argument via `extra`. Atteintes sans lui
+      // (deep link, restauration d'état), on redirige vers l'accueil plutôt
+      // que de laisser un `extra! as T` crasher l'app.
+      redirect: (_, GoRouterState s) => s.extra is Template ? null : '/home',
       builder: (_, GoRouterState state) =>
           TemplateDetailScreen(template: state.extra! as Template),
     ),
     GoRoute(
       path: '/import',
+      redirect: (_, GoRouterState s) => s.extra is Template ? null : '/home',
       builder: (_, GoRouterState state) =>
           ImportScreen(template: state.extra! as Template),
     ),
     GoRoute(path: '/custom', builder: (_, _) => const CustomPromptScreen()),
     GoRoute(
       path: '/generate',
+      redirect: (_, GoRouterState s) => s.extra is GenerateArgs ? null : '/home',
       builder: (_, GoRouterState state) =>
           GenerationScreen(args: state.extra! as GenerateArgs),
     ),
     GoRoute(
       path: '/result',
+      redirect: (_, GoRouterState s) =>
+          s.extra is GenerationResult ? null : '/home',
       builder: (_, GoRouterState state) =>
           ResultScreen(result: state.extra! as GenerationResult),
     ),

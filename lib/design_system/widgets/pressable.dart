@@ -26,9 +26,23 @@ class Pressable extends StatefulWidget {
 
 class _PressableState extends State<Pressable> {
   bool _down = false;
+  DateTime? _lastTap;
+
+  /// Anti-rebond : deux taps rapprochés ne déclenchent qu'une action. Protège
+  /// toutes les cibles (boutons, cartes) contre la double-navigation et, sur
+  /// les actions payantes comme « Générer », le double débit.
+  static const Duration _debounce = Duration(milliseconds: 600);
 
   void _setDown(bool value) {
     if (mounted && _down != value) setState(() => _down = value);
+  }
+
+  void _handleTap() {
+    final DateTime now = DateTime.now();
+    if (_lastTap != null && now.difference(_lastTap!) < _debounce) return;
+    _lastTap = now;
+    if (widget.haptic) Haptics.light();
+    widget.onTap!();
   }
 
   @override
@@ -42,12 +56,7 @@ class _PressableState extends State<Pressable> {
         onTapDown: enabled ? (_) => _setDown(true) : null,
         onTapUp: enabled ? (_) => _setDown(false) : null,
         onTapCancel: enabled ? () => _setDown(false) : null,
-        onTap: enabled
-            ? () {
-                if (widget.haptic) Haptics.light();
-                widget.onTap!();
-              }
-            : null,
+        onTap: enabled ? _handleTap : null,
         child: AnimatedScale(
           scale: _down ? widget.scale : 1.0,
           duration: Motion.fast,

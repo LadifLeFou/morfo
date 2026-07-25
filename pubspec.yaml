@@ -39,6 +39,8 @@ dependencies:
   permission_handler: ^12.0.3
   # Sauvegarde réelle dans la photothèque (iOS/Android ; no-op sur web).
   gal: ^2.3.1
+  # Cache local des créations (l'URL Replicate distante expire en ~1 h).
+  path_provider: ^2.1.5
   # Normalisation EXIF avant envoi : les modèles d'IA lisent les pixels bruts
   # et ignorent la balise d'orientation, d'où des rendus pivotés.
   image: ^4.5.4

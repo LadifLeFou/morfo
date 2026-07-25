@@ -5,6 +5,7 @@ import '../core/models/template.dart';
 import '../core/persistence.dart';
 import '../core/strings.dart';
 import '../services/purchases_service.dart';
+import '../services/result_cache.dart';
 import '../services/service_providers.dart';
 
 /// Solde de démarrage en mode démo (aligné sur l'allocation hebdo d'un abonné :
@@ -107,22 +108,44 @@ final NotifierProvider<CreditsNotifier, int> creditsProvider =
 
 // — Historique —
 class HistoryNotifier extends Notifier<List<GenerationResult>> {
+  /// Plafond : au-delà, les créations les plus anciennes sortent de
+  /// l'historique. Évite que le JSON stocké et le cache d'images grossissent
+  /// sans limite.
+  static const int _maxEntries = 80;
+
   @override
   List<GenerationResult> build() => ref.read(prefsProvider).history;
 
   void add(GenerationResult result) {
-    state = <GenerationResult>[result, ...state];
-    ref.read(prefsProvider).setHistory(state);
+    final List<GenerationResult> next = <GenerationResult>[result, ...state];
+    state =
+        next.length > _maxEntries ? next.sublist(0, _maxEntries) : next;
+    _save();
+  }
+
+  /// Enregistre le chemin de la copie locale une fois le téléchargement fini.
+  void setLocalPath(String id, String path) {
+    state = <GenerationResult>[
+      for (final GenerationResult r in state)
+        r.id == id ? r.copyWith(localPath: path) : r,
+    ];
+    _save();
   }
 
   void remove(GenerationResult result) {
     state = state.where((GenerationResult r) => r.id != result.id).toList();
-    ref.read(prefsProvider).setHistory(state);
+    _save();
   }
 
   void clear() {
     state = <GenerationResult>[];
+    _save();
+  }
+
+  void _save() {
     ref.read(prefsProvider).setHistory(state);
+    // Purge best-effort des fichiers cachés orphelins.
+    pruneCachedResults(state.map((GenerationResult r) => r.id));
   }
 }
 

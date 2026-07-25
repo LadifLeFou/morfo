@@ -7,6 +7,7 @@ import '../../core/app_exception.dart';
 import '../../core/models/generation_result.dart';
 import '../../core/models/template.dart';
 import '../../services/generation_service.dart';
+import '../../services/result_cache.dart';
 import '../../services/service_providers.dart';
 import '../../core/strings.dart';
 
@@ -72,6 +73,10 @@ class GenerationController extends Notifier<GenState> {
       if (_cancelled) return;
       ref.read(historyProvider.notifier).add(result);
       state = GenDone(result);
+      // Copie locale en tâche de fond : l'URL distante expire, la création doit
+      // rester visible dans l'historique. On n'attend pas — l'écran résultat
+      // s'affiche déjà avec l'URL fraîche.
+      _cacheResult(result);
     } on AppException catch (e) {
       if (_cancelled) return;
       state = GenError(e.message, insufficientCredits: e.insufficientCredits);
@@ -103,6 +108,18 @@ class GenerationController extends Notifier<GenState> {
     return outcome.result;
   }
 
+  /// Télécharge la copie locale du résultat sans bloquer l'UI, puis rattache
+  /// son chemin à l'entrée d'historique. Silencieux en cas d'échec (web,
+  /// réseau) : on garde alors l'URL distante.
+  Future<void> _cacheResult(GenerationResult result) async {
+    if (result.isVideo) return; // vidéos non cachées (volumineuses, rares)
+    final String? path =
+        await cacheResultImage(result.outputUrl, result.id);
+    if (path != null) {
+      ref.read(historyProvider.notifier).setLocalPath(result.id, path);
+    }
+  }
+
   Future<GenerationResult> _runVideo(
     GenerationService service,
     Template template,
@@ -118,10 +135,27 @@ class GenerationController extends Notifier<GenState> {
       customPrompt: customPrompt,
     );
 
-    // Polling jusqu'à complétion ou échec (vidéo : ~1-3 min).
-    while (!_cancelled) {
+    // Polling borné : la vidéo prend 1-3 min, on plafonne à 6 min pour ne pas
+    // sonder indéfiniment si le serveur reste bloqué. On tolère quelques
+    // erreurs réseau d'affilée plutôt que de tuer une génération payée sur un
+    // simple hoquet.
+    const int maxPolls = 120; // 120 × 3 s = 6 min
+    const int maxConsecutiveErrors = 5;
+    int errors = 0;
+
+    for (int i = 0; i < maxPolls && !_cancelled; i++) {
       await Future<void>.delayed(const Duration(seconds: 3));
-      final VideoStatus status = await service.pollVideo(requestId);
+      if (_cancelled) break;
+
+      final VideoStatus status;
+      try {
+        status = await service.pollVideo(requestId);
+        errors = 0;
+      } on AppException {
+        if (++errors >= maxConsecutiveErrors) rethrow;
+        continue;
+      }
+
       if (status.phase == VideoPhase.completed) {
         ref.read(creditsProvider.notifier).applyOutcome(template.creditCost, -1);
         return GenerationResult(
@@ -139,7 +173,8 @@ class GenerationController extends Notifier<GenState> {
         throw AppException(S.genFailed);
       }
     }
-    throw AppException(S.genCancelled);
+    // Sortie de boucle sans résultat : annulation ou délai dépassé.
+    throw AppException(_cancelled ? S.genCancelled : S.genFailed);
   }
 }
 
